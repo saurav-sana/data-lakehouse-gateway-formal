@@ -1,0 +1,8 @@
+# TLC / translator output
+build/
+states/
+*.old
+*.out
+MC.toolbox/
+# Tooling
+tools/tla2tools.jar

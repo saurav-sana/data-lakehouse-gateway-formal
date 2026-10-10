@@ -1,0 +1,186 @@
+<section class="fv">
+<style>
+.fv{--fv-accent:#2f6fed;--fv-warn:#d98a00;--fv-line:rgba(127,127,127,.28);--fv-soft:rgba(127,127,127,.08);line-height:1.65}
+.fv h4{margin:2.2em 0 .6em;padding-left:.6em;border-left:4px solid var(--fv-accent)}
+.fv .lead{font-size:1.08em}
+.fv .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:.8em;margin:1.4em 0}
+.fv .stat{background:var(--fv-soft);border:1px solid var(--fv-line);border-radius:10px;padding:.8em;text-align:center}
+.fv .stat b{display:block;font-size:1.8em;line-height:1.1;color:var(--fv-accent)}
+.fv .stat span{font-size:.85em;opacity:.8}
+.fv .callout{border-left:4px solid var(--fv-accent);background:var(--fv-soft);padding:.8em 1em;border-radius:0 8px 8px 0;margin:1.2em 0}
+.fv .callout.warn{border-left-color:var(--fv-warn)}
+.fv .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1em;margin:1em 0}
+.fv .card{border:1px solid var(--fv-line);border-radius:10px;padding:1em 1.1em}
+.fv .card h5{margin:0 0 .2em;font-size:1.05em}
+.fv .card .why{font-size:.9em;opacity:.8;margin:0 0 .6em}
+.fv .card ul{margin:0;padding-left:1.1em}
+.fv .card li{margin:.35em 0}
+.fv .steps{counter-reset:s;list-style:none;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1em}
+.fv .steps li{counter-increment:s;border:1px solid var(--fv-line);border-radius:10px;padding:1em 1em 1em 3em;position:relative}
+.fv .steps li:before{content:counter(s);position:absolute;left:.9em;top:.9em;width:1.6em;height:1.6em;border-radius:50%;background:var(--fv-accent);color:#fff;text-align:center;font-weight:700;line-height:1.6em}
+.fv .tblwrap{overflow-x:auto}
+.fv table{border-collapse:collapse;width:100%;font-size:.93em}
+.fv th,.fv td{border:1px solid var(--fv-line);padding:.5em .7em;text-align:left;vertical-align:top}
+.fv th{background:var(--fv-soft)}
+.fv .tag{display:inline-block;font-size:.75em;font-weight:600;padding:.1em .6em;border-radius:99px;border:1px solid var(--fv-line);background:var(--fv-soft);white-space:nowrap}
+.fv .twocol{column-count:2;column-gap:2em;padding-left:1.1em}
+.fv .twocol li{break-inside:avoid;margin:.45em 0}
+.fv .chips{display:flex;flex-wrap:wrap;gap:.5em;padding:0;list-style:none}
+.fv .chips li{border:1px dashed var(--fv-line);border-radius:99px;padding:.25em .8em;font-size:.92em}
+.fv code{background:var(--fv-soft);padding:.1em .35em;border-radius:4px}
+@media(max-width:640px){.fv .twocol{column-count:1}}
+</style>
+
+<h3>4. Model Validation Suite &amp; TLC Configuration</h3>
+
+<p class="lead">
+    The gateway's coordination protocol is written as a PlusCal specification and model-checked with TLC. Instead of testing individual code paths, the checker explores <em>every interleaving</em> of clients, workers, the lease manager, the ETL committer, the garbage collector and injected faults, within fixed bounds. If any interleaving breaks a property, TLC returns a step-by-step counterexample.
+</p>
+
+<div class="stats">
+    <div class="stat"><b>20</b><span>safety invariants</span></div>
+    <div class="stat"><b>6</b><span>transition properties</span></div>
+    <div class="stat"><b>3</b><span>liveness properties</span></div>
+    <div class="stat"><b>13</b><span>design gaps found</span></div>
+</div>
+
+<div class="callout">
+    <strong>What a clean run means.</strong> No counterexample exists <em>within the configured bounds</em>. This is bounded model checking, not a proof for unbounded sizes, and the assumptions in section E are part of the claim.
+</div>
+
+<h4>A. Why a Formal Model, and How It Runs</h4>
+<p>
+    The riskiest behaviours here are concurrency bugs: a zombie worker publishing after losing its lease, a cache entry surviving a snapshot commit, a blob freed while a client still holds it. They depend on rare orderings that unit and load tests seldom hit.
+</p>
+<ol class="steps">
+    <li><strong>Model</strong><br>Each component (client, worker, lease manager, ETL, GC, evictor) is a PlusCal process over shared state.</li>
+    <li><strong>Inject faults</strong><br>Worker crashes and lease timeouts that create zombie workers happen nondeterministically, within a budget.</li>
+    <li><strong>Explore &amp; check</strong><br>TLC enumerates all reachable states and checks every property in each one.</li>
+</ol>
+
+<h4>B. Bounded Model Checking Parameters</h4>
+<div class="tblwrap">
+<table>
+    <thead><tr><th>Parameter</th><th>Value</th><th>What it exercises</th></tr></thead>
+    <tbody>
+        <tr><td>Tenants \(\mathcal{T}\)</td><td>\(\{t_1, t_2\}\)</td><td>Cross-tenant leakage and the tenant-mismatch path</td></tr>
+        <tr><td>Requests \(\mathcal{R}\)</td><td>\(\{r_1, r_2, r_3, r_4\}\)</td><td>One Flight request, two REST requests sharing a query under different security contexts, and one deliberately mismatched request</td></tr>
+        <tr><td>Workers / Blobs</td><td>2 / 4</td><td>Contention and blob reuse after reclamation</td></tr>
+        <tr><td>\(MaxSnapshot\)</td><td>2</td><td>Snapshot commits racing with in-flight jobs and cache writes</td></tr>
+        <tr><td>\(MaxAttempts\)</td><td>2</td><td>Retry after lease expiry, and exhaustion into FAILED</td></tr>
+        <tr><td>\(MaxCrashes\)</td><td>1</td><td>Fail-stop worker crash at any step</td></tr>
+        <tr><td>\(MaxTimeouts\)</td><td>1</td><td>Lease expiry on a <em>live</em> worker (zombie), stopped only by epoch fencing</td></tr>
+    </tbody>
+</table>
+</div>
+<div class="callout">
+    <strong>Deadlock policy.</strong> <code>CHECK_DEADLOCK FALSE</code> is set because background actors (GC, cache evictor, recoverer, ETL) legitimately idle when the system is quiet. Stuck work is caught by the liveness properties instead.
+</div>
+<div class="callout">
+    <strong>Mutation check.</strong> A switch, <code>MutantSkipTenantCheck</code>, deliberately injects the "trust the payload tenant" bug. The tenant invariants are expected to fail under it, which shows they detect a real violation rather than passing vacuously.
+</div>
+
+<h4>C. Safety Invariants</h4>
+<p>A safety invariant must hold in <em>every</em> reachable state. They answer "can anything go wrong?"</p>
+<div class="cards">
+    <div class="card">
+        <h5>Tenant isolation &amp; authorization</h5>
+        <p class="why">Keeps one tenant's data and identity out of another's.</p>
+        <ul>
+            <li><strong>TenantBinding:</strong> admitted jobs carry the tenant and security context from verified auth, never the payload.</li>
+            <li><strong>MismatchRejected &amp; UnauthorizedIsInert:</strong> a tenant mismatch ends in UNAUTHORIZED, with no queue entry, blob, commit or delivery.</li>
+            <li><strong>RLSEnforcement:</strong> once RUNNING or later, the row-level-security predicate was applied for the authenticated tenant.</li>
+            <li><strong>TenantIsolation:</strong> a delivered result carries the receiving client's tenant, query and context.</li>
+        </ul>
+    </div>
+    <div class="card">
+        <h5>Result, claim-check &amp; cache integrity</h5>
+        <p class="why">Keeps a pointer from resolving to wrong or missing data.</p>
+        <ul>
+            <li><strong>DeliveredResultIntegrity &amp; ClaimCheckIntegrity:</strong> held results point at an existing, published blob matching tenant, query, context and version.</li>
+            <li><strong>BlobPtrIffResultState:</strong> a job has a blob pointer exactly when it has a result.</li>
+            <li><strong>NoSharedBlobPointer &amp; BlobPoolConsistency:</strong> no double allocation, no leaked blobs.</li>
+            <li><strong>StagedBlobWellFormed:</strong> staged blobs record writer and lease epoch, so the GC can spot orphans.</li>
+            <li><strong>CacheIntegrity &amp; CacheFreshness:</strong> cache entries match their own key, and only the current snapshot is cached.</li>
+        </ul>
+    </div>
+    <div class="card">
+        <h5>Job, lease &amp; queue discipline</h5>
+        <p class="why">Keeps a request from being lost, duplicated or double-run.</p>
+        <ul>
+            <li><strong>ExactlyOnceCommit:</strong> at most one commit, and COMPLETED holds exactly when it committed.</li>
+            <li><strong>FailedImpliesExhausted:</strong> FAILED only after every retry is spent.</li>
+            <li><strong>LeaseOwnership &amp; QueueConsistency:</strong> only active jobs have an owner, and a QUEUED job is in the queue exactly once.</li>
+            <li><strong>FlightIsLocal:</strong> Flight requests are never queued, leased or retried.</li>
+            <li><strong>SnapshotBound &amp; TypeOK:</strong> no snapshot newer than the catalog's, and all state stays in its declared domain.</li>
+        </ul>
+    </div>
+</div>
+
+<h4>D. Transition and Temporal Properties</h4>
+<div class="cards">
+    <div class="card">
+        <h5>Transition properties</h5>
+        <p class="why">Constrain which steps may ever happen.</p>
+        <ul>
+            <li><strong>EpochMonotonic</strong> (\(\Box[\,\text{epoch}' \ge \text{epoch}\,]\)): lease epochs never decrease. This fencing-token guarantee makes zombie workers harmless.</li>
+            <li><strong>SnapshotNeverChanges:</strong> a job keeps the snapshot it was bound to (snapshot isolation).</li>
+            <li><strong>CatalogMonotonic, CommitMonotonic, DeliveryImmutable:</strong> snapshots only advance, commit counts never fall, delivered results never change.</li>
+            <li><strong>TerminalAbsorbing:</strong> COMPLETED, FAILED and UNAUTHORIZED are final.</li>
+        </ul>
+    </div>
+    <div class="card">
+        <h5>Liveness properties</h5>
+        <p class="why">Require progress. Checked under weak fairness of all background actors, with crashes and timeouts bounded.</p>
+        <ul>
+            <li><strong>LiveTermination</strong> (\(\text{Pending} \leadsto \text{Terminal}\)): every queued or running request reaches COMPLETED, FAILED or UNAUTHORIZED. With FailedImpliesExhausted, work cannot hang and cannot fail early.</li>
+            <li><strong>ClientsComplete</strong> (\(\forall r:\ \Diamond\,\text{released}_r\)): every client eventually releases its result.</li>
+            <li><strong>GCReclaimsGarbage</strong> (\(b \in \text{GCable} \leadsto b \notin \text{GCable}\)): orphaned and unreferenced blobs are eventually reclaimed.</li>
+        </ul>
+    </div>
+</div>
+
+<h4>E. Assumptions the Guarantees Rest On</h4>
+<ul class="twocol">
+    <li><strong>Trusted identity:</strong> tenant and security context come from a trusted verifier such as a signed JWT; the payload tenant is untrusted and contexts don't change mid-request.</li>
+    <li><strong>Atomic job records:</strong> the job store supports compare-and-set on state, owner and lease epoch. Every fence depends on it.</li>
+    <li><strong>Immutable results:</strong> published blobs are immutable and publication is atomic.</li>
+    <li><strong>Fault model:</strong> fail-stop crashes and bounded lease timeouts only. No Byzantine faults, clock skew or message loss.</li>
+    <li><strong>Reliable queue:</strong> FIFO, with no loss or duplicate delivery.</li>
+    <li><strong>Replacement workers:</strong> start only after the crashed worker's leases are reclaimed.</li>
+    <li><strong>Flight is in-VM by design:</strong> admission and execution share one VM, so no network boundary is crossed for data transfer. That is why Flight has no queue, lease, fence or crash window; a VM crash is a dropped connection and the client retries. Flight results skip the shared cache by default.</li>
+    <li><strong>Abstractions:</strong> snapshots are per-tenant integers, queries are opaque IDs, cache identity is exact-match, and RLS is a flag set at execution. The model doesn't check the SQL rewriting itself.</li>
+</ul>
+
+<h4>F. Design Gaps Found by Static Formal Analysis</h4>
+<p>Reviewing the specification and its first model revisions exposed these gaps. Each became a concrete design requirement.</p>
+<div class="tblwrap">
+<table>
+    <thead><tr><th>#</th><th>Area</th><th>Gap found and why it matters</th><th>Design requirement</th></tr></thead>
+    <tbody>
+        <tr><td>1</td><td><span class="tag">Cache</span></td><td><strong>Invalidation off by one.</strong> A stale snapshot's result stayed servable for one more commit.</td><td>Invalidate every entry at or below the old snapshot atomically with the snapshot advance.</td></tr>
+        <tr><td>2</td><td><span class="tag">Storage</span></td><td><strong>Delivered blobs never reclaimed.</strong> Job and client references never expired, so the pool leaks and the earlier "GC fix" was inert.</td><td>Define result lifetime with a client release or TTL, and let the GC reclaim released blobs.</td></tr>
+        <tr><td>3</td><td><span class="tag">Security</span></td><td><strong>Tenant-mismatch check was dead code.</strong> PlusCal evaluates right-hand sides in the pre-step state, so the check compared two placeholders and a mismatched request would have run against the authenticated tenant.</td><td>Compare trusted and untrusted tenants directly at the admission boundary, and keep the mutation check.</td></tr>
+        <tr><td>4</td><td><span class="tag">Liveness</span></td><td><strong>Unconditional lease expiry.</strong> Any job could be expired at any time, so "every job terminates" held vacuously by ending in FAILED.</td><td>Expire a lease only on owner death or heartbeat timeout; allow FAILED only after retries are exhausted.</td></tr>
+        <tr><td>5</td><td><span class="tag">Security</span></td><td><strong>Cache key ignored security context.</strong> A second context overwrote the first, causing thrashing and weak isolation.</td><td>Include the security context in the cache key.</td></tr>
+        <tr><td>6</td><td><span class="tag">Storage</span></td><td><strong>Write and publish were one atomic step.</strong> The model could not produce the real failure: a zombie writes a blob, fails the epoch fence and leaves an orphan.</td><td>Write a staged blob recording writer and epoch, then publish the pointer under a fenced compare-and-set.</td></tr>
+        <tr><td>7</td><td><span class="tag">Storage</span></td><td><strong>GC couldn't tell in-flight from orphaned.</strong> Freeing a staged blob a live worker is about to publish would corrupt results.</td><td>Reclaim a staged blob only once the job's lease epoch has moved past the blob's epoch.</td></tr>
+        <tr><td>8</td><td><span class="tag">Cache</span></td><td><strong>Cache population races with release and GC.</strong> An entry could point at a freed or reused blob.</td><td>Re-verify blob existence and metadata atomically on insert, or use a conditional put.</td></tr>
+        <tr><td>9</td><td><span class="tag">Cache</span></td><td><strong>Cache entries pin blobs with no eviction.</strong> A full pool can starve new jobs.</td><td>Add TTL or LRU eviction and a pool-pressure policy.</td></tr>
+        <tr><td>10</td><td><span class="tag">Liveness</span></td><td><strong>Worker recovery before lease reclaim.</strong> Jobs stay CLAIMED with no actor left to advance them.</td><td>Reclaim leases before a replacement starts, or give workers an incarnation number.</td></tr>
+        <tr><td>11</td><td><span class="tag">Cache</span></td><td><strong>Commit and cache write were one step.</strong> Real systems can crash between them, leaving a job COMPLETED but uncached.</td><td>Treat the result cache as best-effort; never assume an entry exists after COMPLETED.</td></tr>
+        <tr><td>12</td><td><span class="tag">Contract</span></td><td><strong>Freshness contract was unstated.</strong> A request admitted before an ETL commit legitimately returns the older snapshot.</td><td>Document snapshot isolation at admission: results match the bound snapshot, not necessarily the latest.</td></tr>
+        <tr><td>13</td><td><span class="tag">Contract</span></td><td><strong>Flight has no fencing or recovery by design.</strong> A VM crash mid-execution has no gateway-side recovery.</td><td>State that Flight failure means client retry.</td></tr>
+    </tbody>
+</table>
+</div>
+
+<h4>G. Out of Scope for This Iteration</h4>
+<ul class="chips">
+    <li>Permission revocation and policy-version changes</li>
+    <li>Snapshot expiry while a job is bound</li>
+    <li>Single-flight coalescing of identical queries</li>
+    <li>Real clock-based TTLs and heartbeats</li>
+    <li>VM-level crashes on the Flight path</li>
+</ul>
+</section>
