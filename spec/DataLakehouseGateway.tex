@@ -1,0 +1,2822 @@
+\batchmode %% Suppresses most terminal output.
+\documentclass{article}
+\usepackage{color}
+\definecolor{boxshade}{gray}{0.85}
+\setlength{\textwidth}{360pt}
+\setlength{\textheight}{541pt}
+\usepackage{latexsym}
+\usepackage{ifthen}
+% \usepackage{color}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SWITCHES                                                                  %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newboolean{shading} 
+\setboolean{shading}{false}
+\makeatletter
+ %% this is needed only when inserted into the file, not when
+ %% used as a package file.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                           %
+% DEFINITIONS OF SYMBOL-PRODUCING COMMANDS                                  %
+%                                                                           %
+%    TLA+      LaTeX                                                        %
+%    symbol    command                                                      %
+%    ------    -------                                                      %
+%    =>        \implies                                                     %
+%    <:        \ltcolon                                                     %
+%    :>        \colongt                                                     %
+%    ==        \defeq                                                       %
+%    ..        \dotdot                                                      %
+%    ::        \coloncolon                                                  %
+%    =|        \eqdash                                                      %
+%    ++        \pp                                                          %
+%    --        \mm                                                          %
+%    **        \stst                                                        %
+%    //        \slsl                                                        %
+%    ^         \ct                                                          %
+%    \A        \A                                                           %
+%    \E        \E                                                           %
+%    \AA       \AA                                                          %
+%    \EE       \EE                                                          %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newlength{\symlength}
+\newcommand{\implies}{\Rightarrow}
+\newcommand{\ltcolon}{\mathrel{<\!\!\mbox{:}}}
+\newcommand{\colongt}{\mathrel{\!\mbox{:}\!\!>}}
+\newcommand{\defeq}{\;\mathrel{\smash   %% keep this symbol from being too tall
+    {{\stackrel{\scriptscriptstyle\Delta}{=}}}}\;}
+\newcommand{\dotdot}{\mathrel{\ldotp\ldotp}}
+\newcommand{\coloncolon}{\mathrel{::\;}}
+\newcommand{\eqdash}{\mathrel = \joinrel \hspace{-.28em}|}
+\newcommand{\pp}{\mathbin{++}}
+\newcommand{\mm}{\mathbin{--}}
+\newcommand{\stst}{*\!*}
+\newcommand{\slsl}{/\!/}
+\newcommand{\ct}{\hat{\hspace{.4em}}}
+\newcommand{\A}{\forall}
+\newcommand{\E}{\exists}
+\renewcommand{\AA}{\makebox{$\raisebox{.05em}{\makebox[0pt][l]{%
+   $\forall\hspace{-.517em}\forall\hspace{-.517em}\forall$}}%
+   \forall\hspace{-.517em}\forall \hspace{-.517em}\forall\,$}}
+\newcommand{\EE}{\makebox{$\raisebox{.05em}{\makebox[0pt][l]{%
+   $\exists\hspace{-.517em}\exists\hspace{-.517em}\exists$}}%
+   \exists\hspace{-.517em}\exists\hspace{-.517em}\exists\,$}}
+\newcommand{\whileop}{\.{\stackrel
+  {\mbox{\raisebox{-.3em}[0pt][0pt]{$\scriptscriptstyle+\;\,$}}}%
+  {-\hspace{-.16em}\triangleright}}}
+
+% Commands are defined to produce the upper-case keywords.
+% Note that some have space after them.
+\newcommand{\ASSUME}{\textsc{assume }}
+\newcommand{\ASSUMPTION}{\textsc{assumption }}
+\newcommand{\AXIOM}{\textsc{axiom }}
+\newcommand{\BOOLEAN}{\textsc{boolean }}
+\newcommand{\CASE}{\textsc{case }}
+\newcommand{\CONSTANT}{\textsc{constant }}
+\newcommand{\CONSTANTS}{\textsc{constants }}
+\newcommand{\ELSE}{\settowidth{\symlength}{\THEN}%
+   \makebox[\symlength][l]{\textsc{ else}}}
+\newcommand{\EXCEPT}{\textsc{ except }}
+\newcommand{\EXTENDS}{\textsc{extends }}
+\newcommand{\FALSE}{\textsc{false}}
+\newcommand{\IF}{\textsc{if }}
+\newcommand{\IN}{\settowidth{\symlength}{\LET}%
+   \makebox[\symlength][l]{\textsc{in}}}
+\newcommand{\INSTANCE}{\textsc{instance }}
+\newcommand{\LET}{\textsc{let }}
+\newcommand{\LOCAL}{\textsc{local }}
+\newcommand{\MODULE}{\textsc{module }}
+\newcommand{\OTHER}{\textsc{other }}
+\newcommand{\STRING}{\textsc{string}}
+\newcommand{\THEN}{\textsc{ then }}
+\newcommand{\THEOREM}{\textsc{theorem }}
+\newcommand{\LEMMA}{\textsc{lemma }}
+\newcommand{\PROPOSITION}{\textsc{proposition }}
+\newcommand{\COROLLARY}{\textsc{corollary }}
+\newcommand{\TRUE}{\textsc{true}}
+\newcommand{\VARIABLE}{\textsc{variable }}
+\newcommand{\VARIABLES}{\textsc{variables }}
+\newcommand{\WITH}{\textsc{ with }}
+\newcommand{\WF}{\textrm{WF}}
+\newcommand{\SF}{\textrm{SF}}
+\newcommand{\CHOOSE}{\textsc{choose }}
+\newcommand{\ENABLED}{\textsc{enabled }}
+\newcommand{\UNCHANGED}{\textsc{unchanged }}
+\newcommand{\SUBSET}{\textsc{subset }}
+\newcommand{\UNION}{\textsc{union }}
+\newcommand{\DOMAIN}{\textsc{domain }}
+% Added for tla2tex
+\newcommand{\BY}{\textsc{by }}
+\newcommand{\OBVIOUS}{\textsc{obvious }}
+\newcommand{\HAVE}{\textsc{have }}
+\newcommand{\QED}{\textsc{qed }}
+\newcommand{\TAKE}{\textsc{take }}
+\newcommand{\DEF}{\textsc{ def }}
+\newcommand{\HIDE}{\textsc{hide }}
+\newcommand{\RECURSIVE}{\textsc{recursive }}
+\newcommand{\USE}{\textsc{use }}
+\newcommand{\DEFINE}{\textsc{define }}
+\newcommand{\PROOF}{\textsc{proof }}
+\newcommand{\WITNESS}{\textsc{witness }}
+\newcommand{\PICK}{\textsc{pick }}
+\newcommand{\DEFS}{\textsc{defs }}
+\newcommand{\PROVE}{\settowidth{\symlength}{\ASSUME}%
+   \makebox[\symlength][l]{\textsc{prove}}\@s{-4.1}}%
+  %% The \@s{-4.1) is a kludge added on 24 Oct 2009 [happy birthday, Ellen]
+  %% so the correct alignment occurs if the user types
+  %%   ASSUME X
+  %%   PROVE  Y
+  %% because it cancels the extra 4.1 pts added because of the 
+  %% extra space after the PROVE.  This seems to works OK.
+  %% However, the 4.1 equals Parameters.LaTeXLeftSpace(1) and
+  %% should be changed if that method ever changes.
+\newcommand{\SUFFICES}{\textsc{suffices }}
+\newcommand{\NEW}{\textsc{new }}
+\newcommand{\LAMBDA}{\textsc{lambda }}
+\newcommand{\STATE}{\textsc{state }}
+\newcommand{\ACTION}{\textsc{action }}
+\newcommand{\TEMPORAL}{\textsc{temporal }}
+\newcommand{\ONLY}{\textsc{only }}              %% added by LL on 2 Oct 2009
+\newcommand{\OMITTED}{\textsc{omitted }}        %% added by LL on 31 Oct 2009
+\newcommand{\@pfstepnum}[2]{\ensuremath{\langle#1\rangle}\textrm{#2}}
+\newcommand{\bang}{\@s{1}\mbox{\small !}\@s{1}}
+%% We should format || differently in PlusCal code than in TLA+ formulas.
+\newcommand{\p@barbar}{\ifpcalsymbols
+   \,\,\rule[-.25em]{.075em}{1em}\hspace*{.2em}\rule[-.25em]{.075em}{1em}\,\,%
+   \else \,||\,\fi}
+%% PlusCal keywords
+\newcommand{\p@fair}{\textbf{fair }}
+\newcommand{\p@semicolon}{\textbf{\,; }}
+\newcommand{\p@algorithm}{\textbf{algorithm }}
+\newcommand{\p@mmfair}{\textbf{-{}-fair }}
+\newcommand{\p@mmalgorithm}{\textbf{-{}-algorithm }}
+\newcommand{\p@assert}{\textbf{assert }}
+\newcommand{\p@await}{\textbf{await }}
+\newcommand{\p@begin}{\textbf{begin }}
+\newcommand{\p@end}{\textbf{end }}
+\newcommand{\p@call}{\textbf{call }}
+\newcommand{\p@define}{\textbf{define }}
+\newcommand{\p@do}{\textbf{ do }}
+\newcommand{\p@either}{\textbf{either }}
+\newcommand{\p@or}{\textbf{or }}
+\newcommand{\p@goto}{\textbf{goto }}
+\newcommand{\p@if}{\textbf{if }}
+\newcommand{\p@then}{\,\,\textbf{then }}
+\newcommand{\p@else}{\ifcsyntax \textbf{else } \else \,\,\textbf{else }\fi}
+\newcommand{\p@elsif}{\,\,\textbf{elsif }}
+\newcommand{\p@macro}{\textbf{macro }}
+\newcommand{\p@print}{\textbf{print }}
+\newcommand{\p@procedure}{\textbf{procedure }}
+\newcommand{\p@process}{\textbf{process }}
+\newcommand{\p@return}{\textbf{return}}
+\newcommand{\p@skip}{\textbf{skip}}
+\newcommand{\p@variable}{\textbf{variable }}
+\newcommand{\p@variables}{\textbf{variables }}
+\newcommand{\p@while}{\textbf{while }}
+\newcommand{\p@when}{\textbf{when }}
+\newcommand{\p@with}{\textbf{with }}
+\newcommand{\p@lparen}{\textbf{(\,\,}}
+\newcommand{\p@rparen}{\textbf{\,\,) }}   
+\newcommand{\p@lbrace}{\textbf{\{\,\,}}   
+\newcommand{\p@rbrace}{\textbf{\,\,\} }}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% REDEFINE STANDARD COMMANDS TO MAKE THEM FORMAT BETTER %
+%                                                       %
+% We redefine \in and \notin                            %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\renewcommand{\_}{\rule{.4em}{.06em}\hspace{.05em}}
+\newlength{\equalswidth}
+\let\oldin=\in
+\let\oldnotin=\notin
+\renewcommand{\in}{%
+   {\settowidth{\equalswidth}{$\.{=}$}\makebox[\equalswidth][c]{$\oldin$}}}
+\renewcommand{\notin}{%
+   {\settowidth{\equalswidth}{$\.{=}$}\makebox[\equalswidth]{$\oldnotin$}}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                  %
+% HORIZONTAL BARS:                                 %
+%                                                  %
+%   \moduleLeftDash    |~~~~~~~~~~                 %
+%   \moduleRightDash    ~~~~~~~~~~|                %
+%   \midbar            |----------|                %
+%   \bottombar         |__________|                %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newlength{\charwidth}\settowidth{\charwidth}{{\small\tt M}}
+\newlength{\boxrulewd}\setlength{\boxrulewd}{.4pt}
+\newlength{\boxlineht}\setlength{\boxlineht}{.5\baselineskip}
+\newcommand{\boxsep}{\charwidth}
+\newlength{\boxruleht}\setlength{\boxruleht}{.5ex}
+\newlength{\boxruledp}\setlength{\boxruledp}{-\boxruleht}
+\addtolength{\boxruledp}{\boxrulewd}
+\newcommand{\boxrule}{\leaders\hrule height \boxruleht depth \boxruledp
+                      \hfill\mbox{}}
+\newcommand{\@computerule}{%
+  \setlength{\boxruleht}{.5ex}%
+  \setlength{\boxruledp}{-\boxruleht}%
+  \addtolength{\boxruledp}{\boxrulewd}}
+
+\newcommand{\bottombar}{\hspace{-\boxsep}%
+  \raisebox{-\boxrulewd}[0pt][0pt]{\rule[.5ex]{\boxrulewd}{\boxlineht}}%
+  \boxrule
+  \raisebox{-\boxrulewd}[0pt][0pt]{%
+      \rule[.5ex]{\boxrulewd}{\boxlineht}}\hspace{-\boxsep}\vspace{0pt}}
+
+\newcommand{\moduleLeftDash}%
+   {\hspace*{-\boxsep}%
+     \raisebox{-\boxlineht}[0pt][0pt]{\rule[.5ex]{\boxrulewd
+               }{\boxlineht}}%
+    \boxrule\hspace*{.4em }}
+
+\newcommand{\moduleRightDash}%
+    {\hspace*{.4em}\boxrule
+    \raisebox{-\boxlineht}[0pt][0pt]{\rule[.5ex]{\boxrulewd
+               }{\boxlineht}}\hspace{-\boxsep}}%\vspace{.2em}
+
+\newcommand{\midbar}{\hspace{-\boxsep}\raisebox{-.5\boxlineht}[0pt][0pt]{%
+   \rule[.5ex]{\boxrulewd}{\boxlineht}}\boxrule\raisebox{-.5\boxlineht%
+   }[0pt][0pt]{\rule[.5ex]{\boxrulewd}{\boxlineht}}\hspace{-\boxsep}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% FORMATING COMMANDS                                                        %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PLUSCAL SHADING                                                           %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% The TeX pcalshading switch is set on to cause PlusCal shading to be
+% performed.  This changes the behavior of the following commands and
+% environments to cause full-width shading to be performed on all lines.
+% 
+%   \tstrut \@x cpar mcom \@pvspace
+% 
+% The TeX pcalsymbols switch is turned on when typesetting a PlusCal algorithm,
+% whether or not shading is being performed.  It causes symbols (other than
+% parentheses and braces and PlusCal-only keywords) that should be typeset
+% differently depending on whether they are in an algorithm to be typeset
+% appropriately.  Currently, the only such symbol is "||".
+%
+% The TeX csyntax switch is turned on when typesetting a PlusCal algorithm in
+% c-syntax.  This allows symbols to be format differently in the two syntaxes.
+% The "else" keyword is the only one that is.
+
+\newif\ifpcalshading \pcalshadingfalse
+\newif\ifpcalsymbols \pcalsymbolsfalse
+\newif\ifcsyntax     \csyntaxtrue
+
+% The \@pvspace command makes a vertical space.  It uses \vspace
+% except with \ifpcalshading, in which case it sets \pvcalvspace
+% and the space is added by a following \@x command.
+%
+\newlength{\pcalvspace}\setlength{\pcalvspace}{0pt}%
+\newcommand{\@pvspace}[1]{%
+  \ifpcalshading
+     \par\global\setlength{\pcalvspace}{#1}%
+  \else
+     \par\vspace{#1}%
+  \fi
+}
+
+% The lcom environment was changed to set \lcomindent equal to
+% the indentation it produces.  This length is used by the
+% cpar environment to make shading extend for the full width
+% of the line.  This assumes that lcom environments are not
+% nested.  I hope TLATeX does not nest them.
+%
+\newlength{\lcomindent}%
+\setlength{\lcomindent}{0pt}%
+
+%\tstrut: A strut to produce inter-paragraph space in a comment.
+%\rstrut: A strut to extend the bottom of a one-line comment so
+%         there's no break in the shading between comments on 
+%         successive lines.
+\newcommand\tstrut%
+  {\raisebox{\vshadelen}{\raisebox{-.25em}{\rule{0pt}{1.15em}}}%
+   \global\setlength{\vshadelen}{0pt}}
+\newcommand\rstrut{\raisebox{-.25em}{\rule{0pt}{1.15em}}%
+ \global\setlength{\vshadelen}{0pt}}
+
+
+% \.{op} formats operator op in math mode with empty boxes on either side.
+% Used because TeX otherwise vary the amount of space it leaves around op.
+\renewcommand{\.}[1]{\ensuremath{\mbox{}#1\mbox{}}}
+
+% \@s{n} produces an n-point space
+\newcommand{\@s}[1]{\hspace{#1pt}}           
+
+% \@x{txt} starts a specification line in the beginning with txt
+% in the final LaTeX source.
+\newlength{\@xlen}
+\newcommand\xtstrut%
+  {\setlength{\@xlen}{1.05em}%
+   \addtolength{\@xlen}{\pcalvspace}%
+    \raisebox{\vshadelen}{\raisebox{-.25em}{\rule{0pt}{\@xlen}}}%
+   \global\setlength{\vshadelen}{0pt}%
+   \global\setlength{\pcalvspace}{0pt}}
+
+\newcommand{\@x}[1]{\par
+  \ifpcalshading
+  \makebox[0pt][l]{\shadebox{\xtstrut\hspace*{\textwidth}}}%
+  \fi
+  \mbox{$\mbox{}#1\mbox{}$}}  
+
+% \@xx{txt} continues a specification line with the text txt.
+\newcommand{\@xx}[1]{\mbox{$\mbox{}#1\mbox{}$}}  
+
+% \@y{cmt} produces a one-line comment.
+\newcommand{\@y}[1]{\mbox{\footnotesize\hspace{.65em}%
+  \ifthenelse{\boolean{shading}}{%
+      \shadebox{#1\hspace{-\the\lastskip}\rstrut}}%
+               {#1\hspace{-\the\lastskip}\rstrut}}}
+
+% \@z{cmt} produces a zero-width one-line comment.
+\newcommand{\@z}[1]{\makebox[0pt][l]{\footnotesize
+  \ifthenelse{\boolean{shading}}{%
+      \shadebox{#1\hspace{-\the\lastskip}\rstrut}}%
+               {#1\hspace{-\the\lastskip}\rstrut}}}
+
+
+% \@w{str} produces the TLA+ string "str".
+\newcommand{\@w}[1]{\textsf{``{#1}''}}             
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SHADING                                                                   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\graymargin{1}
+  % The number of points of margin in the shaded box.
+
+% \definecolor{boxshade}{gray}{.85}
+% Defines the darkness of the shading: 1 = white, 0 = black
+% Added by TLATeX only if needed.
+
+% \shadebox{txt} puts txt in a shaded box.
+\newlength{\templena}
+\newlength{\templenb}
+\newsavebox{\tempboxa}
+\newcommand{\shadebox}[1]{{\setlength{\fboxsep}{\graymargin pt}%
+     \savebox{\tempboxa}{#1}%
+     \settoheight{\templena}{\usebox{\tempboxa}}%
+     \settodepth{\templenb}{\usebox{\tempboxa}}%
+     \hspace*{-\fboxsep}\raisebox{0pt}[\templena][\templenb]%
+        {\colorbox{boxshade}{\usebox{\tempboxa}}}\hspace*{-\fboxsep}}}
+
+% \vshade{n} makes an n-point inter-paragraph space, with
+%  shading if the `shading' flag is true.
+\newlength{\vshadelen}
+\setlength{\vshadelen}{0pt}
+\newcommand{\vshade}[1]{\ifthenelse{\boolean{shading}}%
+   {\global\setlength{\vshadelen}{#1pt}}%
+   {\vspace{#1pt}}}
+
+\newlength{\boxwidth}
+\newlength{\multicommentdepth}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% THE cpar ENVIRONMENT                                                      %
+% ^^^^^^^^^^^^^^^^^^^^                                                      %
+% The LaTeX input                                                           %
+%                                                                           %
+%   \begin{cpar}{pop}{nest}{isLabel}{d}{e}{arg6}                            %
+%     XXXXXXXXXXXXXXX                                                       %
+%     XXXXXXXXXXXXXXX                                                       %
+%     XXXXXXXXXXXXXXX                                                       %
+%   \end{cpar}                                                              %
+%                                                                           %
+% produces one of two possible results.  If isLabel is the letter "T",      %
+% it produces the following, where [label] is the result of typesetting     %
+% arg6 in an LR box, and d is is a number representing a distance in        %
+% points.                                                                   %
+%                                                                           %
+%   prevailing |<-- d -->[label]<- e ->XXXXXXXXXXXXXXX                      %
+%         left |                       XXXXXXXXXXXXXXX                      %
+%       margin |                       XXXXXXXXXXXXXXX                      %
+%                                                                           %
+% If isLabel is the letter "F", then it produces                            %
+%                                                                           %
+%   prevailing |<-- d -->XXXXXXXXXXXXXXXXXXXXXXX                            %
+%         left |         <- e ->XXXXXXXXXXXXXXXX                            %
+%       margin |                XXXXXXXXXXXXXXXX                            %
+%                                                                           %
+% where d and e are numbers representing distances in points.               %
+%                                                                           %
+% The prevailing left margin is the one in effect before the most recent    %
+% pop (argument 1) cpar environments with "T" as the nest argument, where   %
+% pop is a number \geq 0.                                                   %
+%                                                                           %
+% If the nest argument is the letter "T", then the prevailing left          %
+% margin is moved to the left of the second (and following) lines of        %
+% X's.  Otherwise, the prevailing left margin is left unchanged.            %
+%                                                                           %
+% An \unnest{n} command moves the prevailing left margin to where it was    %
+% before the most recent n cpar environments with "T" as the nesting        %
+% argument.                                                                 %
+%                                                                           %
+% The environment leaves no vertical space above or below it, or between    %
+% its paragraphs.  (TLATeX inserts the proper amount of vertical space.)    %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcounter{pardepth}
+\setcounter{pardepth}{0}
+
+% \setgmargin{txt} defines \gmarginN to be txt, where N is \roman{pardepth}.
+% \thegmargin equals \gmarginN, where N is \roman{pardepth}.
+\newcommand{\setgmargin}[1]{%
+  \expandafter\xdef\csname gmargin\roman{pardepth}\endcsname{#1}}
+\newcommand{\thegmargin}{\csname gmargin\roman{pardepth}\endcsname}
+\newcommand{\gmargin}{0pt}
+
+\newsavebox{\tempsbox}
+
+\newlength{\@cparht}
+\newlength{\@cpardp}
+\newenvironment{cpar}[6]{%
+  \addtocounter{pardepth}{-#1}%
+  \ifthenelse{\boolean{shading}}{\par\begin{lrbox}{\tempsbox}%
+                                 \begin{minipage}[t]{\linewidth}}{}%
+  \begin{list}{}{%
+     \edef\temp{\thegmargin}
+     \ifthenelse{\equal{#3}{T}}%
+       {\settowidth{\leftmargin}{\hspace{\temp}\footnotesize #6\hspace{#5pt}}%
+        \addtolength{\leftmargin}{#4pt}}%
+       {\setlength{\leftmargin}{#4pt}%
+        \addtolength{\leftmargin}{#5pt}%
+        \addtolength{\leftmargin}{\temp}%
+        \setlength{\itemindent}{-#5pt}}%
+      \ifthenelse{\equal{#2}{T}}{\addtocounter{pardepth}{1}%
+                                 \setgmargin{\the\leftmargin}}{}%
+      \setlength{\labelwidth}{0pt}%
+      \setlength{\labelsep}{0pt}%
+      \setlength{\itemindent}{-\leftmargin}%
+      \setlength{\topsep}{0pt}%
+      \setlength{\parsep}{0pt}%
+      \setlength{\partopsep}{0pt}%
+      \setlength{\parskip}{0pt}%
+      \setlength{\itemsep}{0pt}
+      \setlength{\itemindent}{#4pt}%
+      \addtolength{\itemindent}{-\leftmargin}}%
+   \ifthenelse{\equal{#3}{T}}%
+      {\item[\tstrut\footnotesize \hspace{\temp}{#6}\hspace{#5pt}]
+        }%
+      {\item[\tstrut\hspace{\temp}]%
+         }%
+   \footnotesize}
+ {\hspace{-\the\lastskip}\tstrut
+ \end{list}%
+  \ifthenelse{\boolean{shading}}%
+          {\end{minipage}%
+           \end{lrbox}%
+           \ifpcalshading
+             \setlength{\@cparht}{\ht\tempsbox}%
+             \setlength{\@cpardp}{\dp\tempsbox}%
+             \addtolength{\@cparht}{.15em}%
+             \addtolength{\@cpardp}{.2em}%
+             \addtolength{\@cparht}{\@cpardp}%
+            % I don't know what's going on here.  I want to add a
+            % \pcalvspace high shaded line, but I don't know how to
+            % do it.  A little trial and error shows that the following
+            % does a reasonable job approximating that, eliminating
+            % the line if \pcalvspace is small.
+            \addtolength{\@cparht}{\pcalvspace}%
+             \ifdim \pcalvspace > .8em
+               \addtolength{\pcalvspace}{-.2em}%
+               \hspace*{-\lcomindent}%
+               \shadebox{\rule{0pt}{\pcalvspace}\hspace*{\textwidth}}\par
+               \global\setlength{\pcalvspace}{0pt}%
+               \fi
+             \hspace*{-\lcomindent}%
+             \makebox[0pt][l]{\raisebox{-\@cpardp}[0pt][0pt]{%
+                 \shadebox{\rule{0pt}{\@cparht}\hspace*{\textwidth}}}}%
+             \hspace*{\lcomindent}\usebox{\tempsbox}%
+             \par
+           \else
+             \shadebox{\usebox{\tempsbox}}\par
+           \fi}%
+           {}%
+  }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% THE ppar ENVIRONMENT                                                       %
+% ^^^^^^^^^^^^^^^^^^^^                                                       %
+% The environment                                                            %
+%                                                                            %
+%   \begin{ppar} ... \end{ppar}                                              %
+%                                                                            %
+% is equivalent to                                                           %
+%                                                                            %
+%   \begin{cpar}{0}{F}{F}{0}{0}{} ... \end{cpar}                             %
+%                                                                            %
+% The environment is put around each line of the output for a PlusCal        %
+% algorithm.                                                                 %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\newenvironment{ppar}{%
+%  \ifthenelse{\boolean{shading}}{\par\begin{lrbox}{\tempsbox}%
+%                                 \begin{minipage}[t]{\linewidth}}{}%
+%  \begin{list}{}{%
+%     \edef\temp{\thegmargin}
+%        \setlength{\leftmargin}{0pt}%
+%        \addtolength{\leftmargin}{\temp}%
+%        \setlength{\itemindent}{0pt}%
+%      \setlength{\labelwidth}{0pt}%
+%      \setlength{\labelsep}{0pt}%
+%      \setlength{\itemindent}{-\leftmargin}%
+%      \setlength{\topsep}{0pt}%
+%      \setlength{\parsep}{0pt}%
+%      \setlength{\partopsep}{0pt}%
+%      \setlength{\parskip}{0pt}%
+%      \setlength{\itemsep}{0pt}
+%      \setlength{\itemindent}{0pt}%
+%      \addtolength{\itemindent}{-\leftmargin}}%
+%      \item[\tstrut\hspace{\temp}]}%
+% {\hspace{-\the\lastskip}\tstrut
+% \end{list}%
+%  \ifthenelse{\boolean{shading}}{\end{minipage}  
+%                                 \end{lrbox}%
+%                                 \shadebox{\usebox{\tempsbox}}\par}{}%
+%  }
+
+ %%% TESTING
+ \newcommand{\xtest}[1]{\par
+ \makebox[0pt][l]{\shadebox{\xtstrut\hspace*{\textwidth}}}%
+ \mbox{$\mbox{}#1\mbox{}$}} 
+
+% \newcommand{\xxtest}[1]{\par
+% \makebox[0pt][l]{\shadebox{\xtstrut{#1}\hspace*{\textwidth}}}%
+% \mbox{$\mbox{}#1\mbox{}$}} 
+
+%\newlength{\pcalvspace}
+%\setlength{\pcalvspace}{0pt}
+% \newlength{\xxtestlen}
+% \setlength{\xxtestlen}{0pt}
+% \newcommand\xtstrut%
+%   {\setlength{\xxtestlen}{1.15em}%
+%    \addtolength{\xxtestlen}{\pcalvspace}%
+%     \raisebox{\vshadelen}{\raisebox{-.25em}{\rule{0pt}{\xxtestlen}}}%
+%    \global\setlength{\vshadelen}{0pt}%
+%    \global\setlength{\pcalvspace}{0pt}}
+   
+   %%%% TESTING
+   
+   %% The xcpar environment
+   %%  Note: overloaded use of \pcalvspace for testing.
+   %%
+%   \newlength{\xcparht}%
+%   \newlength{\xcpardp}%
+   
+%   \newenvironment{xcpar}[6]{%
+%  \addtocounter{pardepth}{-#1}%
+%  \ifthenelse{\boolean{shading}}{\par\begin{lrbox}{\tempsbox}%
+%                                 \begin{minipage}[t]{\linewidth}}{}%
+%  \begin{list}{}{%
+%     \edef\temp{\thegmargin}%
+%     \ifthenelse{\equal{#3}{T}}%
+%       {\settowidth{\leftmargin}{\hspace{\temp}\footnotesize #6\hspace{#5pt}}%
+%        \addtolength{\leftmargin}{#4pt}}%
+%       {\setlength{\leftmargin}{#4pt}%
+%        \addtolength{\leftmargin}{#5pt}%
+%        \addtolength{\leftmargin}{\temp}%
+%        \setlength{\itemindent}{-#5pt}}%
+%      \ifthenelse{\equal{#2}{T}}{\addtocounter{pardepth}{1}%
+%                                 \setgmargin{\the\leftmargin}}{}%
+%      \setlength{\labelwidth}{0pt}%
+%      \setlength{\labelsep}{0pt}%
+%      \setlength{\itemindent}{-\leftmargin}%
+%      \setlength{\topsep}{0pt}%
+%      \setlength{\parsep}{0pt}%
+%      \setlength{\partopsep}{0pt}%
+%      \setlength{\parskip}{0pt}%
+%      \setlength{\itemsep}{0pt}%
+%      \setlength{\itemindent}{#4pt}%
+%      \addtolength{\itemindent}{-\leftmargin}}%
+%   \ifthenelse{\equal{#3}{T}}%
+%      {\item[\xtstrut\footnotesize \hspace{\temp}{#6}\hspace{#5pt}]%
+%        }%
+%      {\item[\xtstrut\hspace{\temp}]%
+%         }%
+%   \footnotesize}
+% {\hspace{-\the\lastskip}\tstrut
+% \end{list}%
+%  \ifthenelse{\boolean{shading}}{\end{minipage}  
+%                                 \end{lrbox}%
+%                                 \setlength{\xcparht}{\ht\tempsbox}%
+%                                 \setlength{\xcpardp}{\dp\tempsbox}%
+%                                 \addtolength{\xcparht}{.15em}%
+%                                 \addtolength{\xcpardp}{.2em}%
+%                                 \addtolength{\xcparht}{\xcpardp}%
+%                                 \hspace*{-\lcomindent}%
+%                                 \makebox[0pt][l]{\raisebox{-\xcpardp}[0pt][0pt]{%
+%                                      \shadebox{\rule{0pt}{\xcparht}\hspace*{\textwidth}}}}%
+%                                 \hspace*{\lcomindent}\usebox{\tempsbox}%
+%                                 \par}{}%
+%  }
+%  
+% \newlength{\xmcomlen}
+%\newenvironment{xmcom}[1]{%
+%  \setcounter{pardepth}{0}%
+%  \hspace{.65em}%
+%  \begin{lrbox}{\alignbox}\sloppypar%
+%      \setboolean{shading}{false}%
+%      \setlength{\boxwidth}{#1pt}%
+%      \addtolength{\boxwidth}{-.65em}%
+%      \begin{minipage}[t]{\boxwidth}\footnotesize
+%      \parskip=0pt\relax}%
+%       {\end{minipage}\end{lrbox}%
+%       \setlength{\xmcomlen}{\textwidth}%
+%       \addtolength{\xmcomlen}{-\wd\alignbox}%
+%       \settodepth{\alignwidth}{\usebox{\alignbox}}%
+%       \global\setlength{\multicommentdepth}{\alignwidth}%
+%       \setlength{\boxwidth}{\alignwidth}%
+%       \global\addtolength{\alignwidth}{-\maxdepth}%
+%       \addtolength{\boxwidth}{.1em}%
+%       \raisebox{0pt}[0pt][0pt]{%
+%        \ifthenelse{\boolean{shading}}%
+%          {\hspace*{-\xmcomlen}\shadebox{\rule[-\boxwidth]{0pt}{0pt}%
+%                                 \hspace*{\xmcomlen}\usebox{\alignbox}}}%
+%          {\usebox{\alignbox}}}%
+%       \vspace*{\alignwidth}\pagebreak[0]\vspace{-\alignwidth}\par}
+% % a multi-line comment, whose first argument is its width in points.
+%  
+   
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% THE lcom ENVIRONMENT                                                       %
+% ^^^^^^^^^^^^^^^^^^^^                                                       %
+% A multi-line comment with no text to its left is typeset in an lcom        % 
+% environment, whose argument is a number representing the indentation       % 
+% of the left margin, in points.  All the text of the comment should be      % 
+% inside cpar environments.                                                  % 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newenvironment{lcom}[1]{%
+  \setlength{\lcomindent}{#1pt} % Added for PlusCal handling.
+  \par\vspace{.2em}%
+  \sloppypar
+  \setcounter{pardepth}{0}%
+  \footnotesize
+  \begin{list}{}{%
+    \setlength{\leftmargin}{#1pt}
+    \setlength{\labelwidth}{0pt}%
+    \setlength{\labelsep}{0pt}%
+    \setlength{\itemindent}{0pt}%
+    \setlength{\topsep}{0pt}%
+    \setlength{\parsep}{0pt}%
+    \setlength{\partopsep}{0pt}%
+    \setlength{\parskip}{0pt}}
+    \item[]}%
+  {\end{list}\vspace{.3em}\setlength{\lcomindent}{0pt}%
+ }
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% THE mcom ENVIRONMENT AND \mutivspace COMMAND                              %
+% ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^                              %
+%                                                                           %
+% A part of the spec containing a right-comment of the form                 %
+%                                                                           %
+%      xxxx (*************)                                                 %
+%      yyyy (* ccccccccc *)                                                 %
+%      ...  (* ccccccccc *)                                                 %
+%           (* ccccccccc *)                                                 %
+%           (* ccccccccc *)                                                 %
+%           (*************)                                                 %
+%                                                                           %
+% is typeset by                                                             %
+%                                                                           %
+%     XXXX \begin{mcom}{d}                                                  %
+%            CCCC ... CCC                                                   %
+%          \end{mcom}                                                       %
+%     YYYY ...                                                              %
+%     \multivspace{n}                                                       %
+%                                                                           %
+% where the number d is the width in points of the comment, n is the        %
+% number of xxxx, yyyy, ...  lines to the left of the comment.              %
+% All the text of the comment should be typeset in cpar environments.       %
+%                                                                           %
+% This puts the comment into a single box (so no page breaks can occur      %
+% within it).  The entire box is shaded iff the shading flag is true.       %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newlength{\xmcomlen}%
+\newenvironment{mcom}[1]{%
+  \setcounter{pardepth}{0}%
+  \hspace{.65em}%
+  \begin{lrbox}{\alignbox}\sloppypar%
+      \setboolean{shading}{false}%
+      \setlength{\boxwidth}{#1pt}%
+      \addtolength{\boxwidth}{-.65em}%
+      \begin{minipage}[t]{\boxwidth}\footnotesize
+      \parskip=0pt\relax}%
+       {\end{minipage}\end{lrbox}%
+       \setlength{\xmcomlen}{\textwidth}%       % For PlusCal shading
+       \addtolength{\xmcomlen}{-\wd\alignbox}%  % For PlusCal shading
+       \settodepth{\alignwidth}{\usebox{\alignbox}}%
+       \global\setlength{\multicommentdepth}{\alignwidth}%
+       \setlength{\boxwidth}{\alignwidth}%      % For PlusCal shading
+       \global\addtolength{\alignwidth}{-\maxdepth}%
+       \addtolength{\boxwidth}{.1em}%           % For PlusCal shading
+      \raisebox{0pt}[0pt][0pt]{%
+        \ifthenelse{\boolean{shading}}%
+          {\ifpcalshading
+             \hspace*{-\xmcomlen}%
+             \shadebox{\rule[-\boxwidth]{0pt}{0pt}\hspace*{\xmcomlen}%
+                          \usebox{\alignbox}}%
+           \else
+             \shadebox{\usebox{\alignbox}}
+           \fi
+          }%
+          {\usebox{\alignbox}}}%
+       \vspace*{\alignwidth}\pagebreak[0]\vspace{-\alignwidth}\par}
+ % a multi-line comment, whose first argument is its width in points.
+
+
+% \multispace{n} produces the vertical space indicated by "|"s in 
+% this situation
+%   
+%     xxxx (*************)
+%     xxxx (* ccccccccc *)
+%      |   (* ccccccccc *)
+%      |   (* ccccccccc *)
+%      |   (* ccccccccc *)
+%      |   (*************)
+%
+% where n is the number of "xxxx" lines.
+\newcommand{\multivspace}[1]{\addtolength{\multicommentdepth}{-#1\baselineskip}%
+ \addtolength{\multicommentdepth}{1.2em}%
+ \ifthenelse{\lengthtest{\multicommentdepth > 0pt}}%
+    {\par\vspace{\multicommentdepth}\par}{}}
+
+%\newenvironment{hpar}[2]{%
+%  \begin{list}{}{\setlength{\leftmargin}{#1pt}%
+%                 \addtolength{\leftmargin}{#2pt}%
+%                 \setlength{\itemindent}{-#2pt}%
+%                 \setlength{\topsep}{0pt}%
+%                 \setlength{\parsep}{0pt}%
+%                 \setlength{\partopsep}{0pt}%
+%                 \setlength{\parskip}{0pt}%
+%                 \addtolength{\labelsep}{0pt}}%
+%  \item[]\footnotesize}{\end{list}}
+%    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%    % Typesets a sequence of paragraphs like this:                         %
+%    %                                                                      %
+%    %      left |<-- d1 --> XXXXXXXXXXXXXXXXXXXXXXXX                       %
+%    %    margin |           <- d2 -> XXXXXXXXXXXXXXX                       %
+%    %           |                    XXXXXXXXXXXXXXX                       %
+%    %           |                                                          %
+%    %           |                    XXXXXXXXXXXXXXX                       %
+%    %           |                    XXXXXXXXXXXXXXX                       %
+%    %                                                                      %
+%    % where d1 = #1pt and d2 = #2pt, but with no vspace between            %
+%    % paragraphs.                                                          %
+%    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Commands for repeated characters that produce dashes.              %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \raisedDash{wd}{ht}{thk} makes a horizontal line wd characters wide, 
+% raised a distance ht ex's above the baseline, with a thickness of 
+% thk em's.
+\newcommand{\raisedDash}[3]{\raisebox{#2ex}{\setlength{\alignwidth}{.5em}%
+  \rule{#1\alignwidth}{#3em}}}
+
+% The following commands take a single argument n and produce the
+% output for n repeated characters, as follows
+%   \cdash:    -
+%   \tdash:    ~
+%   \ceqdash:  =
+%   \usdash:   _
+\newcommand{\cdash}[1]{\raisedDash{#1}{.5}{.04}}
+\newcommand{\usdash}[1]{\raisedDash{#1}{0}{.04}}
+\newcommand{\ceqdash}[1]{\raisedDash{#1}{.5}{.08}}
+\newcommand{\tdash}[1]{\raisedDash{#1}{1}{.08}}
+
+\newlength{\spacewidth}
+\setlength{\spacewidth}{.2em}
+\newcommand{\e}[1]{\hspace{#1\spacewidth}}
+%% \e{i} produces space corresponding to i input spaces.
+
+
+%% Alignment-file Commands
+
+\newlength{\alignboxwidth}
+\newlength{\alignwidth}
+\newsavebox{\alignbox}
+
+% \al{i}{j}{txt} is used in the alignment file to put "%{i}{j}{wd}"
+% in the log file, where wd is the width of the line up to that point,
+% and txt is the following text.
+\newcommand{\al}[3]{%
+  \typeout{\%{#1}{#2}{\the\alignwidth}}%
+  \cl{#3}}
+
+%% \cl{txt} continues a specification line in the alignment file
+%% with text txt.
+\newcommand{\cl}[1]{%
+  \savebox{\alignbox}{\mbox{$\mbox{}#1\mbox{}$}}%
+  \settowidth{\alignboxwidth}{\usebox{\alignbox}}%
+  \addtolength{\alignwidth}{\alignboxwidth}%
+  \usebox{\alignbox}}
+
+% \fl{txt} in the alignment file begins a specification line that
+% starts with the text txt.
+\newcommand{\fl}[1]{%
+  \par
+  \savebox{\alignbox}{\mbox{$\mbox{}#1\mbox{}$}}%
+  \settowidth{\alignwidth}{\usebox{\alignbox}}%
+  \usebox{\alignbox}}
+
+
+
+  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Ordinarily, TeX typesets letters in math mode in a special math italic    %
+% font.  This makes it typeset "it" to look like the product of the         %
+% variables i and t, rather than like the word "it".  The following         %
+% commands tell TeX to use an ordinary italic font instead.                 %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\ifx\documentclass\undefined
+\else
+  \DeclareSymbolFont{tlaitalics}{\encodingdefault}{cmr}{m}{it}
+  \let\itfam\symtlaitalics
+\fi
+
+\makeatletter
+\newcommand{\tlx@c}{\c@tlx@ctr\advance\c@tlx@ctr\@ne}
+\newcounter{tlx@ctr}
+\c@tlx@ctr=\itfam \multiply\c@tlx@ctr"100\relax \advance\c@tlx@ctr "7061\relax
+\mathcode`a=\tlx@c \mathcode`b=\tlx@c \mathcode`c=\tlx@c \mathcode`d=\tlx@c
+\mathcode`e=\tlx@c \mathcode`f=\tlx@c \mathcode`g=\tlx@c \mathcode`h=\tlx@c
+\mathcode`i=\tlx@c \mathcode`j=\tlx@c \mathcode`k=\tlx@c \mathcode`l=\tlx@c
+\mathcode`m=\tlx@c \mathcode`n=\tlx@c \mathcode`o=\tlx@c \mathcode`p=\tlx@c
+\mathcode`q=\tlx@c \mathcode`r=\tlx@c \mathcode`s=\tlx@c \mathcode`t=\tlx@c
+\mathcode`u=\tlx@c \mathcode`v=\tlx@c \mathcode`w=\tlx@c \mathcode`x=\tlx@c
+\mathcode`y=\tlx@c \mathcode`z=\tlx@c
+\c@tlx@ctr=\itfam \multiply\c@tlx@ctr"100\relax \advance\c@tlx@ctr "7041\relax
+\mathcode`A=\tlx@c \mathcode`B=\tlx@c \mathcode`C=\tlx@c \mathcode`D=\tlx@c
+\mathcode`E=\tlx@c \mathcode`F=\tlx@c \mathcode`G=\tlx@c \mathcode`H=\tlx@c
+\mathcode`I=\tlx@c \mathcode`J=\tlx@c \mathcode`K=\tlx@c \mathcode`L=\tlx@c
+\mathcode`M=\tlx@c \mathcode`N=\tlx@c \mathcode`O=\tlx@c \mathcode`P=\tlx@c
+\mathcode`Q=\tlx@c \mathcode`R=\tlx@c \mathcode`S=\tlx@c \mathcode`T=\tlx@c
+\mathcode`U=\tlx@c \mathcode`V=\tlx@c \mathcode`W=\tlx@c \mathcode`X=\tlx@c
+\mathcode`Y=\tlx@c \mathcode`Z=\tlx@c
+\makeatother
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                THE describe ENVIRONMENT                %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%
+% It is like the description environment except it takes an argument
+% ARG that should be the text of the widest label.  It adjusts the
+% indentation so each item with label LABEL produces
+%%      LABEL             blah blah blah
+%%      <- width of ARG ->blah blah blah
+%%                        blah blah blah
+\newenvironment{describe}[1]%
+   {\begin{list}{}{\settowidth{\labelwidth}{#1}%
+            \setlength{\labelsep}{.5em}%
+            \setlength{\leftmargin}{\labelwidth}% 
+            \addtolength{\leftmargin}{\labelsep}%
+            \addtolength{\leftmargin}{\parindent}%
+            \def\makelabel##1{\rm ##1\hfill}}%
+            \setlength{\topsep}{0pt}}%% 
+                % Sets \topsep to 0 to reduce vertical space above
+                % and below embedded displayed equations
+   {\end{list}}
+
+%   For tlatex.TeX
+\usepackage{verbatim}
+\makeatletter
+\def\tla{\let\%\relax%
+         \@bsphack
+         \typeout{\%{\the\linewidth}}%
+             \let\do\@makeother\dospecials\catcode`\^^M\active
+             \let\verbatim@startline\relax
+             \let\verbatim@addtoline\@gobble
+             \let\verbatim@processline\relax
+             \let\verbatim@finish\relax
+             \verbatim@}
+\let\endtla=\@esphack
+
+\let\pcal=\tla
+\let\endpcal=\endtla
+\let\ppcal=\tla
+\let\endppcal=\endtla
+
+% The tlatex environment is used by TLATeX.TeX to typeset TLA+.
+% TLATeX.TLA starts its files by writing a \tlatex command.  This
+% command/environment sets \parindent to 0 and defines \% to its
+% standard definition because the writing of the log files is messed up
+% if \% is defined to be something else.  It also executes
+% \@computerule to determine the dimensions for the TLA horizonatl
+% bars.
+\newenvironment{tlatex}{\@computerule%
+                        \setlength{\parindent}{0pt}%
+                       \makeatletter\chardef\%=`\%}{}
+
+
+% The notla environment produces no output.  You can turn a 
+% tla environment to a notla environment to prevent tlatex.TeX from
+% re-formatting the environment.
+
+\def\notla{\let\%\relax%
+         \@bsphack
+             \let\do\@makeother\dospecials\catcode`\^^M\active
+             \let\verbatim@startline\relax
+             \let\verbatim@addtoline\@gobble
+             \let\verbatim@processline\relax
+             \let\verbatim@finish\relax
+             \verbatim@}
+\let\endnotla=\@esphack
+
+\let\nopcal=\notla
+\let\endnopcal=\endnotla
+\let\noppcal=\notla
+\let\endnoppcal=\endnotla
+
+%%%%%%%%%%%%%%%%%%%%%%%% end of tlatex.sty file %%%%%%%%%%%%%%%%%%%%%%% 
+% last modified on Fri  3 August 2012 at 14:23:49 PST by lamport
+
+\begin{document}
+\tlatex
+\setboolean{shading}{true}
+\fl{}\moduleLeftDash\cl{ {\MODULE} DataLakehouseGateway}\moduleRightDash\cl{}
+\fl{}
+\fl{ {\EXTENDS} Naturals ,\, Sequences ,\, FiniteSets ,\, TLC}
+\fl{}
+\fl{}
+\fl{}\al{5}{0}{}
+\fl{}\al{6}{0}{}
+\fl{}
+\fl{ {\CONSTANTS}}
+ \fl{ Tenants ,\, Clients ,\, Requests ,\, Queries ,\, Workers ,\, Blobs ,\,
+ ProxyNodes ,\,}
+ \fl{ MaxSnapshot ,\, MaxAttempts ,\, MaxCrashes ,\, MaxTimeouts ,\,
+ ScaleOutThreshold ,\,}
+\fl{ RequestedTenantOf ,\,}
+\fl{ AuthenticatedTenantOf ,\,}
+\fl{ QueryOf ,\, ClientOf ,\,}
+\fl{ ProtocolOf ,\,}
+\fl{ SecurityContextOf ,\,}
+\fl{ FlightPopulatesCache ,\,}
+\fl{ MutantSkipTenantCheck}
+\fl{}
+\fl{ {\ASSUME}}
+\fl{ \.{\land}}\al{20}{1}{ {\DOMAIN} RequestedTenantOf \.{=} Requests}
+\fl{ \.{\land}}\al{21}{1}{ {\DOMAIN} AuthenticatedTenantOf \.{=} Requests}
+\fl{ \.{\land}}\al{22}{1}{ {\DOMAIN} QueryOf \.{=} Requests}
+\fl{ \.{\land}}\al{23}{1}{ {\DOMAIN} ClientOf \.{=} Requests}
+\fl{ \.{\land}}\al{24}{1}{ {\DOMAIN} ProtocolOf \.{=} Requests}
+\fl{ \.{\land}}\al{25}{1}{ {\DOMAIN} SecurityContextOf \.{=} Requests}
+\fl{ \.{\land}}\al{26}{1}{ ProxyNodes \.{\neq} \{ \}}
+\fl{ \.{\land}}\al{27}{1}{ ScaleOutThreshold \.{\in} Nat}
+ \fl{ \.{\land}}\al{28}{1}{ MaxSnapshot \.{\geq} 1 \.{\land} MaxAttempts
+ \.{\geq} 1}
+ \fl{ \.{\land}}\al{29}{1}{ MaxCrashes \.{\in} Nat \.{\land} MaxTimeouts
+ \.{\in} Nat}
+\fl{ \.{\land}}\al{30}{1}{ FlightPopulatesCache \.{\in} {\BOOLEAN}}
+ \fl{ \.{\land}}\al{31}{1}{ MutantSkipTenantCheck}\al{31}{2}{ \.{\in}
+ {\BOOLEAN}}
+\fl{ \.{\land}}\al{32}{1}{ Requests \.{\cap} Workers}\al{32}{4}{ \.{=} \{ \}}
+\fl{}
+\fl{ NONE \.{\defeq}\@w{NONE}}
+\fl{}
+ \fl{ SecCtxs}\al{36}{1}{ \.{\defeq}}\al{36}{2}{ \{ SecurityContextOf [ r ]
+ \.{:} r \.{\in} Requests \}}
+ \fl{ NoEntry}\al{37}{1}{ \.{\defeq}}\al{37}{2}{ [ valid \.{\mapsto} {\FALSE}
+ ,\, blob\_id \.{\mapsto} NONE ]}
+\fl{ FreeBlob \.{\defeq} [}
+\fl{ allocated \.{\mapsto} {\FALSE} ,\,}
+\fl{ staged \.{\mapsto} {\FALSE} ,\,}
+\fl{ req \.{\mapsto} NONE ,\,}
+\fl{ epoch \.{\mapsto} 0 ,\,}
+\fl{ tenant \.{\mapsto} NONE ,\,}
+\fl{ query \.{\mapsto} NONE ,\,}
+\fl{ version \.{\mapsto} 0 ,\,}
+\fl{ security\_context \.{\mapsto} NONE}
+\fl{ ]}
+\fl{}
+\fl{ {\p@mmalgorithm} DataLakehouseGateway}
+\fl{}
+\fl{ {\p@variables}}
+ \fl{ hash\_ring \.{\in} [ Tenants \.{\times} Queries \.{\rightarrow}
+ ProxyNodes ] ,\,}
+\fl{ catalog\_snapshot \.{=} [ t \.{\in} Tenants \.{\mapsto} 1 ] ,\,}
+\fl{ cache \.{=} [ p}\al{54}{4}{ \.{\in} ProxyNodes \.{\mapsto}}
+\fl{ [ t}\al{55}{2}{ \.{\in} Tenants \.{\mapsto}}
+\fl{ [ q}\al{56}{2}{ \.{\in} Queries \.{\mapsto}}
+\fl{ [ v}\al{57}{2}{ \.{\in} 1 \.{\dotdot} MaxSnapshot \.{\mapsto}}
+\fl{ [ s \.{\in} SecCtxs \.{\mapsto} NoEntry ] ] ] ] ] ,\,}
+\fl{ task\_queue}\al{59}{1}{ \.{=} {\langle} {\rangle} ,\,}
+\fl{ jobs \.{=} [}\al{60}{3}{ r \.{\in} Requests \.{\mapsto}}
+\fl{ [}\al{61}{1}{ state}\al{61}{2}{ \.{\mapsto}}\al{61}{3}{\@w{IDLE} ,\,}
+\fl{ owner}\al{62}{1}{ \.{\mapsto}}\al{62}{2}{ NONE ,\,}
+\fl{ lease\_epoch}\al{63}{1}{ \.{\mapsto} 0 ,\,}
+\fl{ attempts}\al{64}{1}{ \.{\mapsto} 0 ,\,}
+\fl{ requested\_tenant}\al{65}{1}{ \.{\mapsto} RequestedTenantOf [ r ] ,\,}
+\fl{ tenant}\al{66}{1}{ \.{\mapsto} NONE ,\,}
+\fl{ query}\al{67}{1}{ \.{\mapsto} QueryOf [ r ] ,\,}
+\fl{ security\_context}\al{68}{1}{ \.{\mapsto} NONE ,\,}
+\fl{ version}\al{69}{1}{ \.{\mapsto} 0 ,\,}
+\fl{ blob\_ptr}\al{70}{1}{ \.{\mapsto} NONE ,\,}
+\fl{ protocol}\al{71}{1}{ \.{\mapsto} ProtocolOf [ r ] ,\,}
+\fl{ rls\_applied}\al{72}{1}{ \.{\mapsto} {\FALSE} ,\,}
+\fl{ executed\_predicate\_tenant}\al{73}{1}{ \.{\mapsto} NONE ] ] ,\,}
+\fl{ blob\_storage \.{=} [ b \.{\in} Blobs \.{\mapsto} FreeBlob ] ,\,}
+\fl{ available\_blobs \.{=} Blobs ,\,}
+\fl{ worker\_status \.{=} [ w \.{\in} Workers \.{\mapsto}\@w{OFFLINE} ] ,\,}
+\fl{ client\_received \.{=} [}\al{77}{3}{ r \.{\in} Requests \.{\mapsto}}
+\fl{ [}\al{78}{1}{ delivered}\al{78}{2}{ \.{\mapsto}}\al{78}{3}{ {\FALSE} ,\,}
+\fl{ released}\al{79}{1}{ \.{\mapsto}}\al{79}{2}{ {\FALSE} ,\,}
+\fl{ blob\_id}\al{80}{1}{ \.{\mapsto} NONE ,\,}
+\fl{ tenant}\al{81}{1}{ \.{\mapsto} NONE ,\,}
+\fl{ query}\al{82}{1}{ \.{\mapsto} NONE ,\,}
+\fl{ version}\al{83}{1}{ \.{\mapsto} 0 ,\,}
+\fl{ security\_context}\al{84}{1}{ \.{\mapsto} NONE ] ] ,\,}
+\fl{ commit\_count \.{=} [ r \.{\in} Requests \.{\mapsto} 0 ] ,\,}
+\fl{ lease\_expired \.{=} [ r \.{\in} Requests \.{\mapsto} {\FALSE} ] ,\,}
+\fl{ crashes \.{=} 0 ,\, timeouts \.{=} 0 {\p@semicolon}}
+\fl{}
+\fl{ {\p@define}}
+ \fl{ Pending}\al{90}{1}{ \.{\defeq}}\al{90}{2}{ \{\@w{QUEUED} ,\,\@w{CLAIMED}
+ ,\,\@w{RUNNING} ,\,\@w{STAGED} \}}
+ \fl{ Active}\al{91}{1}{ \.{\defeq}}\al{91}{2}{ \{\@w{CLAIMED} ,\,\@w{RUNNING}
+ ,\,\@w{STAGED} \}}
+ \fl{ Terminal}\al{92}{1}{ \.{\defeq} \{\@w{ACCEPTED} ,\,\@w{FAILED}
+ ,\,\@w{UNAUTHORIZED} ,\,\@w{CACHED} \}}
+ \fl{ AllStates}\al{93}{1}{ \.{\defeq} \{\@w{IDLE} \} \.{\cup} Pending
+ \.{\cup} Terminal}
+\fl{}
+\fl{ EffTenant ( r ) \.{\defeq}}
+\fl{ {\IF} MutantSkipTenantCheck}
+\fl{ \.{\THEN} RequestedTenantOf [ r ]}
+\fl{ \.{\ELSE} AuthenticatedTenantOf [ r ]}
+\fl{}
+\fl{ HoldsLease ( r ,\, e ,\, w ,\, st ) \.{\defeq}}
+\fl{ \.{\land}}\al{101}{1}{ jobs [ r ] . lease\_epoch \.{=} e}
+ \fl{ \.{\land}}\al{102}{1}{ jobs [ r ] . owner}\al{102}{7}{
+ \.{=}}\al{102}{8}{ w}
+ \fl{ \.{\land}}\al{103}{1}{ jobs [ r ] . state}\al{103}{7}{
+ \.{=}}\al{103}{8}{ st}
+\fl{}
+ \fl{ QCount ( r ) \.{\defeq} Cardinality ( \{ i \.{\in} 1 \.{\dotdot} Len (
+ task\_queue ) \.{:} task\_queue [ i ] \.{=} r \} )}
+\fl{}
+\fl{ BlobMatches ( b ,\, t ,\, q ,\, v ,\, s ) \.{\defeq}}
+\fl{ \.{\land}}\al{108}{1}{ blob\_storage [ b ] . tenant \.{=} t}
+\fl{ \.{\land}}\al{109}{1}{ blob\_storage [ b ] . query \.{=} q}
+\fl{ \.{\land}}\al{110}{1}{ blob\_storage [ b ] . version \.{=} v}
+\fl{ \.{\land}}\al{111}{1}{ blob\_storage [ b ] . security\_context \.{=} s}
+\fl{}
+\fl{ BlobCached ( b ) \.{\defeq}}
+ \fl{ \E\,}\al{114}{1}{ p}\al{114}{2}{ \.{\in}}\al{114}{3}{ ProxyNodes ,\, t
+ \.{\in} Tenants ,\, q \.{\in} Queries ,\,}
+ \fl{ v}\al{115}{1}{ \.{\in}}\al{115}{2}{ 1 \.{\dotdot} MaxSnapshot ,\, s
+ \.{\in} SecCtxs \.{:}}
+ \fl{ cache [ p ] [ t ] [ q ] [ v ] [ s ] . valid \.{\land} cache [ p ] [ t ]
+ [ q ] [ v ] [ s ] . blob\_id \.{=} b}
+\fl{}
+\fl{ BlobJobHeld ( b ) \.{\defeq}}
+ \fl{ \E\, r \.{\in} Requests \.{:} jobs [ r ] . blob\_ptr \.{=} b \.{\land}
+ {\lnot} client\_received [ r ] . released}
+\fl{}
+\fl{ BlobClientHeld ( b ) \.{\defeq}}
+ \fl{ \E\,}\al{122}{1}{ r \.{\in} Requests \.{:} client\_received [ r ] .
+ delivered}
+\fl{ \.{\land}}\al{123}{1}{ {\lnot} client\_received [ r ] . released}
+\fl{ \.{\land}}\al{124}{1}{ client\_received [ r ] . blob\_id \.{=} b}
+\fl{}
+ \fl{ StagedOrphan ( b ) \.{\defeq} jobs [ blob\_storage [ b ] . req ] .
+ lease\_epoch \.{\neq} blob\_storage [ b ] . epoch}
+\fl{}
+\fl{ GCable \.{\defeq} \{}\al{128}{3}{ b \.{\in} Blobs \.{:}}
+\fl{ \.{\land}}\al{129}{1}{ blob\_storage [ b ] . allocated}
+\fl{ \.{\land}}\al{130}{1}{ {\IF} blob\_storage [ b ] . staged}
+\fl{ \.{\THEN} StagedOrphan ( b )}
+ \fl{ \.{\ELSE} {\lnot} BlobCached ( b ) \.{\land} {\lnot} BlobJobHeld ( b )
+ \.{\land} {\lnot} BlobClientHeld ( b ) \}}
+\fl{}
+\fl{ ExpirableJobs \.{\defeq} \{ r}\al{134}{4}{ \.{\in} Requests \.{:}}
+\fl{ \.{\land}}\al{135}{1}{ jobs [ r ] . state \.{\in} Active}
+ \fl{ \.{\land}}\al{136}{1}{ ( worker\_status [ jobs [ r ] . owner ]
+ \.{\neq}\@w{ACTIVE} \.{\lor} lease\_expired [ r ] ) \}}
+\fl{}
+ \fl{ CachedKeys \.{\defeq} \{}\al{138}{3}{ k \.{\in} ProxyNodes \.{\times}
+ Tenants \.{\times} Queries \.{\times} ( 1 \.{\dotdot} MaxSnapshot )
+ \.{\times} SecCtxs \.{:}}
+ \fl{ cache [ k [ 1 ] ] [ k [ 2 ] ] [ k [ 3 ] ] [ k [ 4 ] ] [ k [ 5 ] ] .
+ valid \}}
+\fl{}
+\fl{}
+\fl{}\al{142}{0}{}
+\fl{}\al{143}{0}{}
+\fl{ Job\_Unauthorized ( j ) \.{\defeq}}
+\fl{ [ j {\EXCEPT} {\bang} . state \.{=}\@w{UNAUTHORIZED} ]}
+\fl{ Job\_Cached ( j ) \.{\defeq}}
+\fl{ [ j {\EXCEPT} {\bang} . state \.{=}\@w{CACHED} ]}
+\fl{}
+\fl{ Job\_Init ( j ,\, t ,\, sc ,\, v ) \.{\defeq}}
+ \fl{ [ j {\EXCEPT} {\bang} . tenant \.{=} t ,\, {\bang} . security\_context
+ \.{=} sc ,\, {\bang} . version \.{=} v ]}
+\fl{}
+\fl{ Job\_Flight\_Accepted ( j ,\, b ) \.{\defeq}}
+ \fl{ [ j {\EXCEPT}}\al{153}{3}{ {\bang}}\al{153}{4}{ . state
+ \.{=}\@w{ACCEPTED} ,\, {\bang} . lease\_epoch \.{=} 1 ,\, {\bang} . attempts
+ \.{=} 1 ,\,}
+ \fl{ {\bang}}\al{154}{1}{ . blob\_ptr \.{=} b ,\, {\bang} . rls\_applied
+ \.{=} {\TRUE} ,\, {\bang} . executed\_predicate\_tenant \.{=} j . tenant ]}
+\fl{}
+\fl{ Job\_Enqueue ( j ) \.{\defeq}}
+ \fl{ [ j {\EXCEPT} {\bang} . state \.{=}\@w{QUEUED} ,\, {\bang} . attempts
+ \.{=} j . attempts \.{+} 1 ]}
+\fl{}
+\fl{ Job\_Claim ( j ,\, w ) \.{\defeq}}
+ \fl{ [ j {\EXCEPT} {\bang} . owner \.{=} w ,\, {\bang} . state
+ \.{=}\@w{CLAIMED} ,\, {\bang} . lease\_epoch \.{=} j . lease\_epoch \.{+} 1
+ ]}
+\fl{}
+\fl{ Job\_Run ( j ) \.{\defeq}}
+ \fl{ [ j {\EXCEPT}}\al{163}{3}{ {\bang}}\al{163}{4}{ . state
+ \.{=}\@w{RUNNING} ,\, {\bang} . rls\_applied \.{=} {\TRUE} ,\,}
+\fl{ {\bang}}\al{164}{1}{ . executed\_predicate\_tenant \.{=} j . tenant ]}
+\fl{}
+\fl{ Job\_Stage ( j ,\, b ) \.{\defeq}}
+ \fl{ [ j {\EXCEPT} {\bang} . blob\_ptr \.{=} b ,\, {\bang} . state
+ \.{=}\@w{STAGED} ]}
+\fl{}
+\fl{ Job\_Accept ( j ) \.{\defeq}}
+ \fl{ [ j {\EXCEPT} {\bang} . state \.{=}\@w{ACCEPTED} ,\, {\bang} . owner
+ \.{=} NONE ]}
+\fl{}
+\fl{ Job\_Retry ( j ) \.{\defeq}}
+ \fl{ [ j {\EXCEPT}}\al{173}{3}{ {\bang}}\al{173}{4}{ . owner \.{=} NONE ,\,
+ {\bang} . state \.{=}\@w{QUEUED} ,\, {\bang} . attempts \.{=} j . attempts
+ \.{+} 1 ,\,}
+ \fl{ {\bang}}\al{174}{1}{ . lease\_epoch}\al{174}{3}{ \.{=}}\al{174}{4}{ j .
+ lease\_epoch \.{+} 1 ,\, {\bang} . blob\_ptr \.{=} NONE ,\,}
+ \fl{ {\bang}}\al{175}{1}{ . rls\_applied}\al{175}{3}{ \.{=}}\al{175}{4}{
+ {\FALSE} ,\, {\bang} . executed\_predicate\_tenant \.{=} NONE ]}
+\fl{}
+\fl{ Job\_Fail ( j ) \.{\defeq}}
+ \fl{ [ j {\EXCEPT}}\al{178}{3}{ {\bang}}\al{178}{4}{ . owner \.{=} NONE ,\,
+ {\bang} . state \.{=}\@w{FAILED} ,\, {\bang} . lease\_epoch \.{=} j .
+ lease\_epoch \.{+} 1 ,\,}
+ \fl{ {\bang}}\al{179}{1}{ . blob\_ptr \.{=} NONE ,\, {\bang} . rls\_applied
+ \.{=} {\FALSE} ,\, {\bang} . executed\_predicate\_tenant \.{=} NONE ]}
+\fl{}
+\fl{ Client\_Deliver ( cr ,\, b ,\, t ,\, q ,\, v ,\, sc ) \.{\defeq}}
+ \fl{ [ cr {\EXCEPT}}\al{182}{3}{ {\bang}}\al{182}{4}{ . delivered \.{=}
+ {\TRUE} ,\, {\bang} . blob\_id \.{=} b ,\, {\bang} . tenant \.{=} t ,\,}
+ \fl{ {\bang}}\al{183}{1}{ . query \.{=} q ,\, {\bang} . version \.{=} v ,\,
+ {\bang} . security\_context \.{=} sc ]}
+\fl{}
+\fl{ Client\_Release ( cr ) \.{\defeq}}
+\fl{ [ cr {\EXCEPT} {\bang} . released \.{=} {\TRUE} ]}
+\fl{}
+\fl{ Blob\_Flight ( t ,\, q ,\, v ,\, sc ) \.{\defeq}}
+ \fl{ [}\al{189}{1}{ allocated \.{\mapsto} {\TRUE} ,\, staged \.{\mapsto}
+ {\FALSE} ,\, req \.{\mapsto} NONE ,\, epoch \.{\mapsto} 0 ,\,}
+ \fl{ tenant \.{\mapsto} t ,\, query \.{\mapsto} q ,\, version \.{\mapsto} v
+ ,\, security\_context \.{\mapsto} sc ]}
+\fl{}
+\fl{ Blob\_Stage ( req ,\, ep ,\, t ,\, q ,\, v ,\, sc ) \.{\defeq}}
+ \fl{ [}\al{193}{1}{ allocated \.{\mapsto} {\TRUE} ,\, staged \.{\mapsto}
+ {\TRUE} ,\, req \.{\mapsto} req ,\, epoch \.{\mapsto} ep ,\,}
+ \fl{ tenant \.{\mapsto} t ,\, query \.{\mapsto} q ,\, version \.{\mapsto} v
+ ,\, security\_context \.{\mapsto} sc ]}
+\fl{}
+\fl{ Blob\_Commit ( b\_val ) \.{\defeq}}
+\fl{ [ b\_val {\EXCEPT} {\bang} . staged \.{=} {\FALSE} ]}
+\fl{}
+\fl{ ValidCache ( b ) \.{\defeq}}
+\fl{ [ valid \.{\mapsto} {\TRUE} ,\, blob\_id \.{\mapsto} b ]}
+\fl{}
+\fl{ InvalidateCache ( old\_cache ,\, t ,\, new\_v ) \.{\defeq}}
+\fl{ [ p}\al{203}{2}{ \.{\in} ProxyNodes \.{\mapsto}}
+\fl{ [}\al{204}{1}{ old\_cache [ p ] {\EXCEPT} {\bang} [ t ] \.{=}}
+\fl{ [ q}\al{205}{2}{ \.{\in} Queries \.{\mapsto}}
+\fl{ [ v}\al{206}{2}{ \.{\in} 1 \.{\dotdot} MaxSnapshot \.{\mapsto}}
+\fl{ [ s}\al{207}{2}{ \.{\in} SecCtxs \.{\mapsto}}
+\fl{ {\IF} v \.{<} new\_v}
+\fl{ \.{\THEN} NoEntry}
+\fl{ \.{\ELSE} old\_cache [ p ] [ t ] [ q ] [ v ] [ s ] ] ] ] ] ]}
+\fl{}
+\fl{}
+\fl{}\al{213}{0}{}
+\fl{}\al{214}{0}{}
+\fl{ TypeOK}\al{215}{1}{ \.{\defeq}}
+ \fl{ \.{\land}}\al{216}{1}{ catalog\_snapshot \.{\in} [ Tenants
+ \.{\rightarrow} 1 \.{\dotdot} MaxSnapshot ]}
+ \fl{ \.{\land}}\al{217}{1}{ worker\_status \.{\in} [ Workers \.{\rightarrow}
+ \{\@w{OFFLINE} ,\,\@w{ACTIVE} ,\,\@w{CRASHED} \} ]}
+ \fl{ \.{\land}}\al{218}{1}{ hash\_ring \.{\in} [ Tenants \.{\times} Queries
+ \.{\rightarrow} ProxyNodes ]}
+ \fl{ \.{\land}}\al{219}{1}{ \A\,}\al{219}{2}{ p}\al{219}{3}{
+ \.{\in}}\al{219}{4}{ ProxyNodes ,\, t \.{\in} Tenants ,\, q \.{\in} Queries
+ ,\,}
+ \fl{ v}\al{220}{1}{ \.{\in}}\al{220}{2}{ 1 \.{\dotdot} MaxSnapshot ,\, s
+ \.{\in} SecCtxs \.{:}}
+\fl{ cache [ p ] [ t ] [ q ] [ v ] [ s ] . valid \.{\in} {\BOOLEAN}}
+\fl{ \.{\land}}\al{222}{1}{ \A\,}\al{222}{2}{ r \.{\in} Requests \.{:}}
+\fl{ \.{\land}}\al{223}{1}{ jobs [ r ] . state \.{\in} AllStates}
+ \fl{ \.{\land}}\al{224}{1}{ jobs [ r ] . attempts \.{\in} 0 \.{\dotdot}
+ MaxAttempts}
+\fl{ \.{\land}}\al{225}{1}{ jobs [ r ] . lease\_epoch \.{\in} Nat}
+ \fl{ \.{\land}}\al{226}{1}{ jobs [ r ] . blob\_ptr \.{\in} Blobs \.{\cup} \{
+ NONE \}}
+\fl{ \.{\land}}\al{227}{1}{ commit\_count [ r ] \.{\in} 0 \.{\dotdot} 1}
+ \fl{ \.{\land}}\al{228}{1}{ client\_received [ r ] . delivered \.{\implies}
+ client\_received [ r ] . blob\_id \.{\neq} NONE}
+\fl{}
+\fl{ TenantBinding \.{\defeq}}
+\fl{ \A\,}\al{231}{1}{ r \.{\in} Requests \.{:}}
+ \fl{ jobs}\al{232}{1}{ [ r ] . state \.{\notin} \{\@w{IDLE}
+ ,\,\@w{UNAUTHORIZED} ,\,\@w{CACHED} \} \.{\implies}}
+ \fl{ \.{\land}}\al{233}{1}{ jobs [ r ] . tenant \.{=} AuthenticatedTenantOf [
+ r ]}
+ \fl{ \.{\land}}\al{234}{1}{ jobs [ r ] . security\_context \.{=}
+ SecurityContextOf [ r ]}
+\fl{}
+\fl{ RLSEnforcement \.{\defeq}}
+\fl{ \A\,}\al{237}{1}{ r \.{\in} Requests \.{:}}
+ \fl{ jobs}\al{238}{1}{ [ r ] . state \.{\in} \{\@w{RUNNING} ,\,\@w{STAGED}
+ ,\,\@w{ACCEPTED} \} \.{\implies}}
+\fl{ \.{\land}}\al{239}{1}{ jobs [ r ] . rls\_applied}
+ \fl{ \.{\land}}\al{240}{1}{ jobs [ r ] . executed\_predicate\_tenant \.{=}
+ AuthenticatedTenantOf [ r ]}
+\fl{}
+\fl{ UnauthorizedIsInert \.{\defeq}}
+\fl{ \A\,}\al{243}{1}{ r \.{\in} Requests \.{:}}
+\fl{ jobs}\al{244}{1}{ [ r ] . state \.{=}\@w{UNAUTHORIZED} \.{\implies}}
+\fl{ \.{\land}}\al{245}{1}{ jobs [ r ] . blob\_ptr \.{=} NONE}
+\fl{ \.{\land}}\al{246}{1}{ jobs [ r ] . owner \.{=} NONE}
+\fl{ \.{\land}}\al{247}{1}{ jobs [ r ] . attempts \.{=} 0}
+\fl{ \.{\land}}\al{248}{1}{ commit\_count [ r ] \.{=} 0}
+\fl{ \.{\land}}\al{249}{1}{ {\lnot} client\_received [ r ] . delivered}
+\fl{ \.{\land}}\al{250}{1}{ QCount ( r ) \.{=} 0}
+\fl{}
+\fl{ MismatchRejected \.{\defeq}}
+\fl{ \A\,}\al{253}{1}{ r \.{\in} Requests \.{:}}
+ \fl{ RequestedTenantOf [ r ]}\al{254}{4}{ \.{\neq} AuthenticatedTenantOf [ r
+ ] \.{\implies}}
+ \fl{ \.{\land}}\al{255}{1}{ jobs [ r ] . state}\al{255}{7}{ \.{\in}
+ \{\@w{IDLE} ,\,\@w{UNAUTHORIZED} \}}
+\fl{ \.{\land}}\al{256}{1}{ {\lnot} client\_received [ r ] . delivered}
+\fl{}
+\fl{ TenantIsolation \.{\defeq}}
+\fl{ \A\,}\al{259}{1}{ r \.{\in} Requests \.{:}}
+\fl{ client\_received [ r ] . delivered \.{\implies}}
+ \fl{ \.{\land}}\al{261}{1}{ client\_received [ r ] . tenant \.{=}
+ AuthenticatedTenantOf [ r ]}
+ \fl{ \.{\land}}\al{262}{1}{ client\_received [ r ] . security\_context \.{=}
+ SecurityContextOf [ r ]}
+ \fl{ \.{\land}}\al{263}{1}{ client\_received [ r ] . query \.{=} QueryOf [ r
+ ]}
+\fl{}
+\fl{ DeliveredResultIntegrity \.{\defeq}}
+\fl{ \A\,}\al{266}{1}{ r \.{\in} Requests \.{:}}
+ \fl{ (}\al{267}{1}{ client\_received [ r ] . delivered \.{\land} {\lnot}
+ client\_received [ r ] . released ) \.{\implies}}
+ \fl{ \.{\land}}\al{268}{1}{ blob\_storage [ client\_received [ r ] . blob\_id
+ ] . allocated}
+ \fl{ \.{\land}}\al{269}{1}{ {\lnot} blob\_storage [ client\_received [ r ] .
+ blob\_id ] . staged}
+ \fl{ \.{\land}}\al{270}{1}{ BlobMatches (}\al{270}{3}{ client\_received [ r ]
+ . blob\_id ,\,}
+\fl{ AuthenticatedTenantOf [ r ] ,\, QueryOf [ r ] ,\,}
+\fl{ client\_received [ r ] . version ,\, SecurityContextOf [ r ] )}
+\fl{}
+\fl{ ClaimCheckIntegrity \.{\defeq}}
+\fl{ \A\,}\al{275}{1}{ r \.{\in} Requests \.{:}}
+ \fl{ (}\al{276}{1}{ jobs [ r ] . state \.{=}\@w{ACCEPTED} \.{\land} {\lnot}
+ client\_received [ r ] . released ) \.{\implies}}
+ \fl{ \.{\land}}\al{277}{1}{ blob\_storage [ jobs [ r ] . blob\_ptr ] .
+ allocated}
+ \fl{ \.{\land}}\al{278}{1}{ {\lnot} blob\_storage [ jobs [ r ] . blob\_ptr ]
+ . staged}
+ \fl{ \.{\land}}\al{279}{1}{ BlobMatches (}\al{279}{3}{ jobs [ r ] . blob\_ptr
+ ,\, jobs [ r ] . tenant ,\, jobs [ r ] . query ,\,}
+\fl{ jobs [ r ] . version ,\, jobs [ r ] . security\_context )}
+\fl{}
+\fl{ BlobPtrIffResultState \.{\defeq}}
+\fl{ \A\,}\al{283}{1}{ r \.{\in} Requests \.{:}}
+\fl{ (}\al{284}{1}{ jobs [ r ] . blob\_ptr \.{\neq} NONE ) \.{\equiv}}
+\fl{ ( jobs [ r ] . state \.{\in} \{\@w{STAGED} ,\,\@w{ACCEPTED} \} )}
+\fl{}
+\fl{ NoSharedBlobPointer \.{\defeq}}
+\fl{ \A\,}\al{288}{1}{ r1 ,\, r2 \.{\in} Requests \.{:}}
+ \fl{ (}\al{289}{1}{ r1}\al{289}{2}{ \.{\neq} r2 \.{\land} jobs [ r1 ] .
+ blob\_ptr \.{\neq} NONE \.{\land} jobs [ r2 ] . blob\_ptr \.{\neq} NONE}
+ \fl{ \.{\land}}\al{290}{1}{ {\lnot} client\_received [ r1 ] . released
+ \.{\land} {\lnot} client\_received [ r2 ] . released ) \.{\implies}}
+\fl{ jobs [ r1 ] . blob\_ptr \.{\neq} jobs [ r2 ] . blob\_ptr}
+\fl{}
+\fl{ BlobPoolConsistency \.{\defeq}}
+ \fl{ available\_blobs \.{=} \{ b \.{\in} Blobs \.{:} {\lnot} blob\_storage [
+ b ] . allocated \}}
+\fl{}
+\fl{ StagedBlobWellFormed \.{\defeq}}
+\fl{ \A\,}\al{297}{1}{ b \.{\in} Blobs \.{:}}
+\fl{ blob\_storage [ b ] . staged \.{\implies}}
+\fl{ \.{\land}}\al{299}{1}{ blob\_storage [ b ] . allocated}
+\fl{ \.{\land}}\al{300}{1}{ blob\_storage [ b ] . req \.{\in} Requests}
+ \fl{ \.{\land}}\al{301}{1}{ jobs [ blob\_storage [ b ] . req ] . lease\_epoch
+ \.{\geq} blob\_storage [ b ] . epoch}
+\fl{}
+\fl{ CacheIntegrity \.{\defeq}}
+ \fl{ \A\,}\al{304}{1}{ p}\al{304}{2}{ \.{\in}}\al{304}{3}{ ProxyNodes ,\, t
+ \.{\in} Tenants ,\, q \.{\in} Queries ,\,}
+ \fl{ v}\al{305}{1}{ \.{\in}}\al{305}{2}{ 1 \.{\dotdot} MaxSnapshot ,\, s
+ \.{\in} SecCtxs \.{:}}
+\fl{ cache [ p ] [ t ] [ q ] [ v ] [ s ] . valid \.{\implies}}
+ \fl{ \.{\land}}\al{307}{1}{ blob\_storage [ cache [ p ] [ t ] [ q ] [ v ] [ s
+ ] . blob\_id ] . allocated}
+ \fl{ \.{\land}}\al{308}{1}{ {\lnot} blob\_storage [ cache [ p ] [ t ] [ q ] [
+ v ] [ s ] . blob\_id ] . staged}
+ \fl{ \.{\land}}\al{309}{1}{ BlobMatches ( cache [ p ] [ t ] [ q ] [ v ] [ s ]
+ . blob\_id ,\, t ,\, q ,\, v ,\, s )}
+\fl{}
+\fl{ CacheFreshness \.{\defeq}}
+ \fl{ \A\,}\al{312}{1}{ p}\al{312}{2}{ \.{\in}}\al{312}{3}{ ProxyNodes ,\, t
+ \.{\in} Tenants ,\, q \.{\in} Queries ,\,}
+ \fl{ v}\al{313}{1}{ \.{\in}}\al{313}{2}{ 1 \.{\dotdot} MaxSnapshot ,\, s
+ \.{\in} SecCtxs \.{:}}
+ \fl{ cache [ p ] [ t ] [ q ] [ v ] [ s ] . valid \.{\implies} v \.{=}
+ catalog\_snapshot [ t ]}
+\fl{}
+\fl{ ExactlyOnceCommit \.{\defeq}}
+\fl{ \A\,}\al{317}{1}{ r \.{\in} Requests \.{:}}
+\fl{ \.{\land}}\al{318}{1}{ commit\_count [ r ] \.{\leq} 1}
+ \fl{ \.{\land}}\al{319}{1}{ ( jobs [ r ] . state \.{=}\@w{ACCEPTED} )
+ \.{\equiv} ( commit\_count [ r ] \.{=} 1 )}
+\fl{}
+\fl{ FailedImpliesExhausted \.{\defeq}}
+\fl{ \A\,}\al{322}{1}{ r \.{\in} Requests \.{:}}
+ \fl{ jobs [ r ] . state \.{=}\@w{FAILED} \.{\implies} jobs [ r ] . attempts
+ \.{=} MaxAttempts}
+\fl{}
+\fl{ LeaseOwnership \.{\defeq}}
+\fl{ \A\,}\al{326}{1}{ r \.{\in} Requests \.{:}}
+ \fl{ \.{\land}}\al{327}{1}{ jobs [ r ] . state}\al{327}{7}{ \.{\in} Active
+ \.{\implies} jobs [ r ] . owner \.{\in} Workers}
+ \fl{ \.{\land}}\al{328}{1}{ jobs [ r ] . state}\al{328}{7}{ \.{\notin} Active
+ \.{\implies} jobs [ r ] . owner \.{=} NONE}
+\fl{}
+\fl{ QueueConsistency \.{\defeq}}
+\fl{ \A\,}\al{331}{1}{ r \.{\in} Requests \.{:}}
+ \fl{ \.{\land}}\al{332}{1}{ jobs [ r ] . state}\al{332}{7}{ \.{=}\@w{QUEUED}
+ \.{\implies} QCount ( r ) \.{=} 1}
+ \fl{ \.{\land}}\al{333}{1}{ jobs [ r ] . state}\al{333}{7}{
+ \.{\neq}\@w{QUEUED} \.{\implies} QCount ( r ) \.{=} 0}
+\fl{}
+\fl{ FlightIsLocal \.{\defeq}}
+\fl{ \A\,}\al{336}{1}{ r \.{\in} Requests \.{:}}
+\fl{ ProtocolOf [ r ] \.{=}\@w{FLIGHT} \.{\implies}}
+ \fl{ \.{\land}}\al{338}{1}{ jobs [ r ] . state}\al{338}{7}{ \.{\in}
+ \{\@w{IDLE} ,\,\@w{ACCEPTED} ,\,\@w{UNAUTHORIZED} \}}
+\fl{ \.{\land}}\al{339}{1}{ jobs [ r ] . owner}\al{339}{7}{ \.{=} NONE}
+\fl{ \.{\land}}\al{340}{1}{ QCount ( r ) \.{=} 0}
+\fl{}
+\fl{ SnapshotBound \.{\defeq}}
+\fl{ \A\,}\al{343}{1}{ r \.{\in} Requests \.{:}}
+ \fl{ \.{\land}}\al{344}{1}{ jobs}\al{344}{2}{ [ r ] . state \.{\notin}
+ \{\@w{IDLE} ,\,\@w{UNAUTHORIZED} ,\,\@w{CACHED} \} \.{\implies}}
+ \fl{ jobs [ r ] . version \.{\in} 1 \.{\dotdot} catalog\_snapshot [ jobs [ r
+ ] . tenant ]}
+\fl{ \.{\land}}\al{346}{1}{ client\_received [ r ] . delivered \.{\implies}}
+\fl{ client\_received [ r ] . version}
+\fl{ \.{\in} 1 \.{\dotdot} catalog\_snapshot [ AuthenticatedTenantOf [ r ] ]}
+\fl{ {\p@end} {\p@define} {\p@semicolon}}
+\fl{}
+\fl{}
+\fl{}
+\fl{}\al{353}{0}{}
+\fl{}\al{354}{0}{}
+\fl{ {\p@fair} {\p@process} ClientProcess \.{\in} Requests}
+\fl{ {\p@variables} req\_version \.{=} 0 ,\, proxy \.{=} NONE {\p@semicolon}}
+\fl{ {\p@begin}}
+\fl{ Start\@s{.5}\textrm{:}\@s{3}}
+ \fl{ {\p@if} {\lnot}}\al{359}{2}{ MutantSkipTenantCheck \.{\land}
+ AuthenticatedTenantOf [ self ] \.{\neq} RequestedTenantOf [ self ] {\p@then}}
+\fl{ jobs [ self ] \.{:=} Job\_Unauthorized ( jobs [ self ] ) {\p@semicolon}}
+\fl{ {\p@goto} Finish {\p@semicolon}}
+\fl{ {\p@end} {\p@if} {\p@semicolon}}
+\fl{}
+\fl{ BindSnapshot\@s{.5}\textrm{:}\@s{3}}
+ \fl{ req\_version \.{:=} catalog\_snapshot [ EffTenant ( self ) ]
+ {\p@semicolon}}
+ \fl{ proxy \.{:=} hash\_ring [ EffTenant ( self ) ,\, QueryOf [ self ] ]
+ {\p@semicolon}}
+\fl{}
+\fl{ CheckCache\@s{.5}\textrm{:}\@s{3}}
+ \fl{ {\p@if}}\al{369}{1}{ cache [ proxy ] [ EffTenant ( self ) ] [ QueryOf [
+ self ] ] [ req\_version ] [ SecurityContextOf [ self ] ] . valid {\p@then}}
+ \fl{ client\_received [ self ] \.{:=} Client\_Deliver ( client\_received [
+ self ] ,\,}
+ \fl{ cache [ proxy ] [ EffTenant ( self ) ] [ QueryOf [ self ] ] [
+ req\_version ] [ SecurityContextOf [ self ] ] . blob\_id ,\,}
+ \fl{ EffTenant ( self ) ,\, QueryOf [ self ] ,\, req\_version ,\,
+ SecurityContextOf [ self ] ) {\p@semicolon}}
+\fl{}
+\fl{ jobs [ self ] \.{:=} Job\_Cached ( jobs [ self ] ) {\p@semicolon}%
+\@y{\@s{0}%
+ Marks job as terminating via Cache Short-Circuit
+}%
+}
+\fl{ {\p@goto} Finish {\p@semicolon}}
+\fl{ {\p@end} {\p@if} {\p@semicolon}}
+\fl{}
+\fl{ InitializeJob\@s{.5}\textrm{:}\@s{3}}
+ \fl{ jobs [ self ] \.{:=} Job\_Init ( jobs [ self ] ,\, EffTenant ( self )
+ ,\, SecurityContextOf [ self ] ,\, req\_version ) {\p@semicolon}}
+\fl{}
+\fl{ Route\@s{.5}\textrm{:}\@s{3}}
+ \fl{ {\p@if} ProtocolOf [ self ] \.{=}\@w{FLIGHT} {\p@then} {\p@goto}
+ ExecuteFlight {\p@semicolon} {\p@else} {\p@goto} EnqueueREST {\p@semicolon}
+ {\p@end} {\p@if} {\p@semicolon}}
+\fl{}
+\fl{ ExecuteFlight\@s{.5}\textrm{:}\@s{3}}
+\fl{ {\p@await} available\_blobs \.{\neq} \{ \} {\p@semicolon}}
+\fl{ {\p@with} b \.{\in} available\_blobs {\p@do}}
+ \fl{ available\_blobs}\al{387}{1}{ \.{:=}}\al{387}{2}{ available\_blobs
+ \.{\,\backslash\,} \{ b \} {\p@semicolon}}
+ \fl{ blob\_storage [ b ]}\al{388}{4}{ \.{:=}}\al{388}{5}{ Blob\_Flight ( jobs
+ [ self ] . tenant ,\, jobs [ self ] . query ,\, jobs [ self ] . version ,\,
+ jobs [ self ] . security\_context ) {\p@semicolon}}
+ \fl{ jobs [ self ] \.{:=} Job\_Flight\_Accepted ( jobs [ self ] ,\, b )
+ {\p@semicolon}}
+ \fl{ commit\_count [ self ] \.{:=} commit\_count [ self ] \.{+} 1
+ {\p@semicolon}}
+ \fl{ client\_received [ self ] \.{:=} Client\_Deliver ( client\_received [
+ self ] ,\, b ,\, jobs [ self ] . tenant ,\, jobs [ self ] . query ,\, jobs [
+ self ] . version ,\, jobs [ self ] . security\_context ) {\p@semicolon}}
+\fl{}
+ \fl{ {\p@if}}\al{393}{1}{ FlightPopulatesCache \.{\land} jobs [ self ] .
+ version \.{=} catalog\_snapshot [ jobs [ self ] . tenant ] {\p@then}}
+ \fl{ cache}\al{394}{1}{ [ proxy ] [ jobs [ self ] . tenant ] [ jobs [ self ]
+ . query ]}
+ \fl{ [ jobs [ self ] . version ] [ jobs [ self ] . security\_context ] \.{:=}
+ ValidCache ( b ) {\p@semicolon}}
+\fl{ {\p@end} {\p@if} {\p@semicolon}}
+\fl{ {\p@end} {\p@with} {\p@semicolon}}
+\fl{ {\p@goto} Finish {\p@semicolon}}
+\fl{}
+\fl{ EnqueueREST\@s{.5}\textrm{:}\@s{3}}
+ \fl{ jobs [ self ]}\al{401}{4}{ \.{:=}}\al{401}{5}{ Job\_Enqueue ( jobs [
+ self ] ) {\p@semicolon}}
+ \fl{ task\_queue}\al{402}{1}{ \.{:=}}\al{402}{2}{ Append ( task\_queue ,\,
+ self ) {\p@semicolon}}
+\fl{}
+\fl{ AwaitREST\@s{.5}\textrm{:}\@s{3}}
+\fl{ {\p@await} jobs [ self ] . state \.{\in} Terminal {\p@semicolon}}
+\fl{ {\p@if}}\al{406}{1}{ jobs [ self ] . state \.{=}\@w{ACCEPTED} {\p@then}}
+ \fl{ client\_received [ self ] \.{:=} Client\_Deliver ( client\_received [
+ self ] ,\, jobs [ self ] . blob\_ptr ,\, jobs [ self ] . tenant ,\, jobs [
+ self ] . query ,\, jobs [ self ] . version ,\, jobs [ self ] .
+ security\_context ) {\p@semicolon}}
+\fl{ {\p@end} {\p@if} {\p@semicolon}}
+\fl{}
+\fl{ Finish\@s{.5}\textrm{:}\@s{3}}
+\fl{ {\p@if}}\al{411}{1}{ client\_received [ self ] . delivered {\p@then}}
+\fl{ ReleaseBlob\@s{.5}\textrm{:}\@s{3}}
+ \fl{ client\_received [ self ] \.{:=} Client\_Release ( client\_received [
+ self ] ) {\p@semicolon}}
+\fl{ {\p@end} {\p@if} {\p@semicolon}}
+\fl{ {\p@end} {\p@process} {\p@semicolon}}
+\fl{}
+\fl{}
+\fl{}
+\fl{}
+\fl{}\al{420}{0}{}
+\fl{}\al{421}{0}{}
+\fl{ {\p@fair} {\p@process} ComputeWorker \.{\in} Workers}
+ \fl{ {\p@variables} curr\_req \.{=} NONE ,\, curr\_epoch \.{=} 0 ,\,
+ curr\_blob \.{=} NONE ,\, curr\_proxy \.{=} NONE {\p@semicolon}}
+\fl{ {\p@begin}}
+\fl{ ClaimTask\@s{.5}\textrm{:}\@s{3}}
+\fl{ {\p@while} {\TRUE} {\p@do}}
+ \fl{ {\p@await} Len ( task\_queue ) \.{>} 0 \.{\land} worker\_status [ self ]
+ \.{=}\@w{ACTIVE} {\p@semicolon}}
+\fl{ {\p@with} r \.{=} Head ( task\_queue ) {\p@do}}
+\fl{ task\_queue \.{:=} Tail ( task\_queue ) {\p@semicolon}}
+\fl{ curr\_req \.{:=} r {\p@semicolon}}
+\fl{ curr\_blob \.{:=} NONE {\p@semicolon}}
+\fl{ {\p@if}}\al{432}{1}{ jobs [ r ] . state \.{=}\@w{QUEUED} {\p@then}}
+\fl{ curr\_epoch \.{:=} jobs [ r ] . lease\_epoch \.{+} 1 {\p@semicolon}}
+\fl{ jobs [ r ] \.{:=} Job\_Claim ( jobs [ r ] ,\, self ) {\p@semicolon}}
+\fl{ {\p@else}}
+\fl{ curr\_epoch \.{:=} 0 {\p@semicolon}}
+\fl{ {\p@end} {\p@if} {\p@semicolon}}
+\fl{ {\p@end} {\p@with} {\p@semicolon}}
+\fl{}
+\fl{ StartExecution\@s{.5}\textrm{:}\@s{3}}
+ \fl{ {\p@if}}\al{441}{1}{ curr\_epoch \.{>} 0 \.{\land} worker\_status [ self
+ ] \.{=}\@w{ACTIVE} \.{\land} HoldsLease ( curr\_req ,\, curr\_epoch ,\, self
+ ,\,\@w{CLAIMED} ) {\p@then}}
+\fl{ jobs [ curr\_req ] \.{:=} Job\_Run ( jobs [ curr\_req ] ) {\p@semicolon}}
+ \fl{ {\p@else} {\p@goto} ClaimTask {\p@semicolon} {\p@end} {\p@if}
+ {\p@semicolon}}
+\fl{}
+\fl{ AllocateBlob\@s{.5}\textrm{:}\@s{3}}
+ \fl{ {\p@await} worker\_status [ self ] \.{\neq}\@w{ACTIVE} \.{\lor} {\lnot}
+ HoldsLease ( curr\_req ,\, curr\_epoch ,\, self ,\,\@w{RUNNING} ) \.{\lor}
+ available\_blobs \.{\neq} \{ \} {\p@semicolon}}
+ \fl{ {\p@if}}\al{447}{1}{ worker\_status [ self ] \.{=}\@w{ACTIVE} \.{\land}
+ HoldsLease ( curr\_req ,\, curr\_epoch ,\, self ,\,\@w{RUNNING} ) \.{\land}
+ available\_blobs \.{\neq} \{ \} {\p@then}}
+\fl{ {\p@with} b \.{\in} available\_blobs {\p@do}}
+ \fl{ available\_blobs \.{:=} available\_blobs \.{\,\backslash\,} \{ b \}
+ {\p@semicolon}}
+\fl{ curr\_blob \.{:=} b {\p@semicolon}}
+ \fl{ blob\_storage [ b ] \.{:=} Blob\_Stage ( curr\_req ,\, curr\_epoch ,\,
+ jobs [ curr\_req ] . tenant ,\, jobs [ curr\_req ] . query ,\, jobs [
+ curr\_req ] . version ,\, jobs [ curr\_req ] . security\_context )
+ {\p@semicolon}}
+\fl{ {\p@end} {\p@with} {\p@semicolon}}
+ \fl{ {\p@else} {\p@goto} ClaimTask {\p@semicolon} {\p@end} {\p@if}
+ {\p@semicolon}}
+\fl{}
+\fl{ PublishPointer\@s{.5}\textrm{:}\@s{3}}
+ \fl{ {\p@if}}\al{456}{1}{ worker\_status [ self ] \.{=}\@w{ACTIVE} \.{\land}
+ HoldsLease ( curr\_req ,\, curr\_epoch ,\, self ,\,\@w{RUNNING} ) {\p@then}}
+ \fl{ jobs [ curr\_req ] \.{:=} Job\_Stage ( jobs [ curr\_req ] ,\, curr\_blob
+ ) {\p@semicolon}}
+ \fl{ {\p@else} {\p@goto} ClaimTask {\p@semicolon} {\p@end} {\p@if}
+ {\p@semicolon}}
+\fl{}
+\fl{ CommitJob\@s{.5}\textrm{:}\@s{3}}
+ \fl{ {\p@if}}\al{461}{1}{ worker\_status [ self ] \.{=}\@w{ACTIVE} \.{\land}
+ HoldsLease ( curr\_req ,\, curr\_epoch ,\, self ,\,\@w{STAGED} ) {\p@then}}
+ \fl{ jobs [ curr\_req ] \.{:=} Job\_Accept ( jobs [ curr\_req ] )
+ {\p@semicolon}}
+ \fl{ blob\_storage [ curr\_blob ] \.{:=} Blob\_Commit ( blob\_storage [
+ curr\_blob ] ) {\p@semicolon}}
+ \fl{ commit\_count [ curr\_req ] \.{:=} commit\_count [ curr\_req ] \.{+} 1
+ {\p@semicolon}}
+ \fl{ {\p@else} {\p@goto} ClaimTask {\p@semicolon} {\p@end} {\p@if}
+ {\p@semicolon}}
+\fl{}
+\fl{ PopulateCache\@s{.5}\textrm{:}\@s{3}}
+\fl{ {\p@if}}\al{468}{1}{ worker\_status [ self ] \.{=}\@w{ACTIVE}}
+\fl{ \.{\land}}\al{469}{1}{ jobs [ curr\_req ] . state \.{=}\@w{ACCEPTED}}
+\fl{ \.{\land}}\al{470}{1}{ jobs [ curr\_req ] . blob\_ptr \.{=} curr\_blob}
+\fl{ \.{\land}}\al{471}{1}{ blob\_storage [ curr\_blob ] . allocated}
+\fl{ \.{\land}}\al{472}{1}{ {\lnot} blob\_storage [ curr\_blob ] . staged}
+ \fl{ \.{\land}}\al{473}{1}{ BlobMatches (}\al{473}{3}{ curr\_blob ,\, jobs [
+ curr\_req ] . tenant ,\, jobs [ curr\_req ] . query ,\,}
+ \fl{ jobs [ curr\_req ] . version ,\, jobs [ curr\_req ] . security\_context
+ )}
+ \fl{ \.{\land}}\al{475}{1}{ jobs [ curr\_req ] . version \.{=}
+ catalog\_snapshot [ jobs [ curr\_req ] . tenant ] {\p@then}}
+\fl{}
+ \fl{ curr\_proxy \.{:=} hash\_ring [ jobs [ curr\_req ] . tenant ,\, jobs [
+ curr\_req ] . query ] {\p@semicolon}}
+\fl{}
+ \fl{ cache}\al{479}{1}{ [ curr\_proxy ] [ jobs [ curr\_req ] . tenant ] [
+ jobs [ curr\_req ] . query ]}
+ \fl{ [ jobs [ curr\_req ] . version ] [ jobs [ curr\_req ] .
+ security\_context ] \.{:=} ValidCache ( curr\_blob ) {\p@semicolon}}
+\fl{ {\p@end} {\p@if} {\p@semicolon}}
+\fl{ {\p@end} {\p@while} {\p@semicolon}}
+\fl{ {\p@end} {\p@process} {\p@semicolon}}
+\fl{}
+\fl{}
+\fl{}\al{486}{0}{}
+\fl{}\al{487}{0}{}
+\fl{ {\p@fair} {\p@process} KedaAutoscaler \.{=}\@w{KedaAutoscaler}}
+\fl{ {\p@begin}}
+\fl{ ScaleLoop\@s{.5}\textrm{:}\@s{3}}
+\fl{ {\p@while} {\TRUE} {\p@do}}
+\fl{ {\p@either}}
+ \fl{ {\p@await}}\al{493}{1}{ Len}\al{493}{2}{ ( task\_queue ) \.{\geq}
+ ScaleOutThreshold}
+ \fl{ \.{\land}}\al{494}{1}{ \E\, w}\al{494}{3}{ \.{\in}}\al{494}{4}{
+ Workers}\al{494}{5}{ \.{:}}\al{494}{6}{ worker\_status [ w ]}\al{494}{10}{
+ \.{=}}\al{494}{11}{\@w{OFFLINE} {\p@semicolon}}
+ \fl{ {\p@with} w \.{\in} \{ x}\al{495}{5}{ \.{\in}}\al{495}{6}{
+ Workers}\al{495}{7}{ \.{:}}\al{495}{8}{ worker\_status [ x ]}\al{495}{12}{
+ \.{=}}\al{495}{13}{\@w{OFFLINE} \} {\p@do}}
+\fl{ worker\_status [ w ] \.{:=}\@w{ACTIVE} {\p@semicolon}}
+\fl{ {\p@end} {\p@with} {\p@semicolon}}
+\fl{ {\p@or}}
+\fl{ {\p@await}}\al{499}{1}{ Len}\al{499}{2}{ ( task\_queue ) \.{=} 0}
+ \fl{ \.{\land}}\al{500}{1}{ \E\,}\al{500}{2}{ w \.{\in} Workers \.{:}
+ worker\_status [ w ] \.{=}\@w{ACTIVE}}
+ \fl{ \.{\land} \A\, r \.{\in} Requests \.{:} {\lnot} ( jobs [ r ] . owner
+ \.{=} w \.{\land} jobs [ r ] . state \.{\in} Active ) {\p@semicolon}}
+ \fl{ {\p@with} w \.{\in} \{ x}\al{502}{5}{ \.{\in} Workers \.{:}
+ worker\_status [ x ] \.{=}\@w{ACTIVE}}
+ \fl{ \.{\land} \A\, r \.{\in} Requests \.{:} {\lnot} ( jobs [ r ] . owner
+ \.{=} x \.{\land} jobs [ r ] . state \.{\in} Active ) \} {\p@do}}
+\fl{ worker\_status [ w ] \.{:=}\@w{OFFLINE} {\p@semicolon}}
+\fl{ {\p@end} {\p@with} {\p@semicolon}}
+\fl{ {\p@end} {\p@either} {\p@semicolon}}
+\fl{ {\p@end} {\p@while} {\p@semicolon}}
+\fl{ {\p@end} {\p@process} {\p@semicolon}}
+\fl{}
+\fl{}
+\fl{}\al{511}{0}{}
+\fl{}\al{512}{0}{}
+\fl{ {\p@process} TimeoutInjector \.{=}\@w{TimeoutInjector}}
+\fl{ {\p@begin}}
+\fl{ InjectLoop\@s{.5}\textrm{:}\@s{3}}
+\fl{ {\p@while} timeouts \.{<} MaxTimeouts {\p@do}}
+ \fl{ {\p@with} r \.{\in} \{ x \.{\in} Requests \.{:} jobs [ x ] . state
+ \.{\in} Active \.{\land} worker\_status [ jobs [ x ] . owner ]
+ \.{=}\@w{ACTIVE} \.{\land} {\lnot} lease\_expired [ x ] \} {\p@do}}
+\fl{ lease\_expired [ r ] \.{:=} {\TRUE}}\al{518}{6}{ {\p@semicolon}}
+\fl{ timeouts \.{:=} timeouts \.{+} 1}\al{519}{5}{ {\p@semicolon}}
+\fl{ {\p@end} {\p@with} {\p@semicolon}}
+\fl{ {\p@end} {\p@while} {\p@semicolon}}
+\fl{ {\p@end} {\p@process} {\p@semicolon}}
+\fl{}
+\fl{}
+\fl{}\al{525}{0}{}
+\fl{}\al{526}{0}{}
+\fl{ {\p@fair} {\p@process} LeaseManager \.{=}\@w{LeaseManager}}
+\fl{ {\p@begin}}
+\fl{ LeaseLoop\@s{.5}\textrm{:}\@s{3}}
+\fl{ {\p@while} {\TRUE} {\p@do}}
+\fl{ {\p@either}}
+\fl{}
+\fl{ {\p@with} r \.{\in} ExpirableJobs {\p@do}}
+\fl{ {\p@if}}\al{534}{1}{ jobs [ r ] . attempts \.{<} MaxAttempts {\p@then}}
+\fl{ jobs [ r ] \.{:=} Job\_Retry ( jobs [ r ] ) {\p@semicolon}}
+\fl{ task\_queue \.{:=} Append ( task\_queue ,\, r ) {\p@semicolon}}
+\fl{ {\p@else}}
+\fl{ jobs [ r ] \.{:=} Job\_Fail ( jobs [ r ] ) {\p@semicolon}}
+\fl{ {\p@end} {\p@if} {\p@semicolon}}
+\fl{ lease\_expired [ r ] \.{:=} {\FALSE} {\p@semicolon}}
+\fl{ {\p@end} {\p@with} {\p@semicolon}}
+\fl{ {\p@or}}
+\fl{}
+ \fl{ {\p@with} r \.{\in} \{ x \.{\in} Requests \.{:} jobs [ x ] . state
+ \.{\notin} Active \.{\land} lease\_expired [ x ] \} {\p@do}}
+\fl{ lease\_expired [ r ] \.{:=} {\FALSE} {\p@semicolon}}
+\fl{ {\p@end} {\p@with} {\p@semicolon}}
+\fl{ {\p@end} {\p@either} {\p@semicolon}}
+\fl{ {\p@end} {\p@while} {\p@semicolon}}
+\fl{ {\p@end} {\p@process} {\p@semicolon}}
+\fl{}
+\fl{}
+\fl{}\al{552}{0}{}
+\fl{}\al{553}{0}{}
+\fl{ {\p@process} Crasher \.{=}\@w{Crasher}}
+\fl{ {\p@begin}}
+\fl{ CrashLoop\@s{.5}\textrm{:}\@s{3}}
+\fl{ {\p@while} crashes \.{<} MaxCrashes {\p@do}}
+ \fl{ {\p@await} \E\, w \.{\in} Workers \.{:} worker\_status [ w ]
+ \.{=}\@w{ACTIVE} {\p@semicolon}}
+ \fl{ {\p@with} w \.{\in} \{ x \.{\in} Workers \.{:} worker\_status [ x ]
+ \.{=}\@w{ACTIVE} \} {\p@do}}
+\fl{ worker\_status [ w ] \.{:=}\@w{CRASHED} {\p@semicolon}}
+\fl{ crashes \.{:=} crashes \.{+} 1 {\p@semicolon}}
+\fl{ {\p@end} {\p@with} {\p@semicolon}}
+\fl{ {\p@end} {\p@while} {\p@semicolon}}
+\fl{ {\p@end} {\p@process} {\p@semicolon}}
+\fl{}
+\fl{ {\p@fair} {\p@process} Recoverer \.{=}\@w{Recoverer}}
+\fl{ {\p@begin}}
+\fl{ RecoverLoop\@s{.5}\textrm{:}\@s{3}}
+\fl{ {\p@while} {\TRUE} {\p@do}}
+ \fl{ {\p@await} \E\, w \.{\in} Workers \.{:} worker\_status [ w ]
+ \.{=}\@w{CRASHED} {\p@semicolon}}
+ \fl{ {\p@with} w \.{\in} \{ x \.{\in} Workers \.{:} worker\_status [ x ]
+ \.{=}\@w{CRASHED} \} {\p@do}}
+\fl{ worker\_status [ w ] \.{:=}\@w{OFFLINE} {\p@semicolon}}
+\fl{ {\p@end} {\p@with} {\p@semicolon}}
+\fl{ {\p@end} {\p@while} {\p@semicolon}}
+\fl{ {\p@end} {\p@process} {\p@semicolon}}
+\fl{}
+\fl{}
+\fl{}\al{578}{0}{}
+\fl{}\al{579}{0}{}
+\fl{ {\p@fair} {\p@process} GarbageCollector \.{=}\@w{GarbageCollector}}
+\fl{ {\p@begin}}
+\fl{ GCLoop\@s{.5}\textrm{:}\@s{3}}
+\fl{ {\p@while} {\TRUE} {\p@do}}
+\fl{ {\p@with} b \.{\in} GCable {\p@do}}
+ \fl{ blob\_storage [ b ]}\al{585}{4}{ \.{:=}}\al{585}{5}{ FreeBlob
+ {\p@semicolon}}
+ \fl{ available\_blobs}\al{586}{1}{ \.{:=}}\al{586}{2}{ available\_blobs
+ \.{\cup} \{ b \} {\p@semicolon}}
+\fl{ {\p@end} {\p@with} {\p@semicolon}}
+\fl{ {\p@end} {\p@while} {\p@semicolon}}
+\fl{ {\p@end} {\p@process} {\p@semicolon}}
+\fl{}
+\fl{ {\p@fair} {\p@process} CacheEvictor \.{=}\@w{CacheEvictor}}
+\fl{ {\p@begin}}
+\fl{ EvictLoop\@s{.5}\textrm{:}\@s{3}}
+\fl{ {\p@while} {\TRUE} {\p@do}}
+\fl{ {\p@with} e \.{\in} CachedKeys {\p@do}}
+ \fl{ cache [ e [ 1 ] ] [ e [ 2 ] ] [ e [ 3 ] ] [ e [ 4 ] ] [ e [ 5 ] ] \.{:=}
+ NoEntry {\p@semicolon}}
+\fl{ {\p@end} {\p@with} {\p@semicolon}}
+\fl{ {\p@end} {\p@while} {\p@semicolon}}
+\fl{ {\p@end} {\p@process} {\p@semicolon}}
+\fl{}
+\fl{ {\p@fair} {\p@process} LakehouseETL \.{=}\@w{LakehouseETL}}
+\fl{ {\p@begin}}
+\fl{ ETLCommit\@s{.5}\textrm{:}\@s{3}}
+\fl{ {\p@while} {\TRUE} {\p@do}}
+ \fl{ {\p@with} t \.{\in} \{ x \.{\in} Tenants \.{:} catalog\_snapshot [ x ]
+ \.{<} MaxSnapshot \} {\p@do}}
+ \fl{ cache \.{:=} InvalidateCache ( cache ,\, t ,\, catalog\_snapshot [ t ]
+ \.{+} 1 ) {\p@semicolon}}
+ \fl{ catalog\_snapshot [ t ] \.{:=} catalog\_snapshot [ t ] \.{+} 1
+ {\p@semicolon}}
+\fl{ {\p@end} {\p@with} {\p@semicolon}}
+\fl{ {\p@end} {\p@while} {\p@semicolon}}
+\fl{ {\p@end} {\p@process} {\p@semicolon}}
+\fl{}
+\fl{ {\p@end} {\p@algorithm}%
+\@y{%
+ ;
+}%
+}
+\fl{}
+ \fl{ {\VARIABLES}}\al{614}{1}{ pc ,\, hash\_ring ,\, catalog\_snapshot ,\,
+ cache ,\, task\_queue ,\, jobs ,\,}
+ \fl{ blob\_storage ,\, available\_blobs ,\, worker\_status ,\,
+ client\_received ,\,}
+\fl{ commit\_count ,\, lease\_expired ,\, crashes ,\, timeouts}
+\fl{}
+\fl{}
+ \fl{ Pending}\al{619}{1}{ \.{\defeq}}\al{619}{2}{ \{\@w{QUEUED}
+ ,\,\@w{CLAIMED} ,\,\@w{RUNNING} ,\,\@w{STAGED} \}}
+ \fl{ Active}\al{620}{1}{ \.{\defeq}}\al{620}{2}{ \{\@w{CLAIMED}
+ ,\,\@w{RUNNING} ,\,\@w{STAGED} \}}
+ \fl{ Terminal}\al{621}{1}{ \.{\defeq} \{\@w{ACCEPTED} ,\,\@w{FAILED}
+ ,\,\@w{UNAUTHORIZED} ,\,\@w{CACHED} \}}
+ \fl{ AllStates}\al{622}{1}{ \.{\defeq} \{\@w{IDLE} \} \.{\cup} Pending
+ \.{\cup} Terminal}
+\fl{}
+\fl{ EffTenant ( r ) \.{\defeq}}
+\fl{ {\IF} MutantSkipTenantCheck}
+\fl{ \.{\THEN} RequestedTenantOf [ r ]}
+\fl{ \.{\ELSE} AuthenticatedTenantOf [ r ]}
+\fl{}
+\fl{ HoldsLease ( r ,\, e ,\, w ,\, st ) \.{\defeq}}
+\fl{ \.{\land}}\al{630}{1}{ jobs [ r ] . lease\_epoch \.{=} e}
+ \fl{ \.{\land}}\al{631}{1}{ jobs [ r ] . owner}\al{631}{7}{
+ \.{=}}\al{631}{8}{ w}
+ \fl{ \.{\land}}\al{632}{1}{ jobs [ r ] . state}\al{632}{7}{
+ \.{=}}\al{632}{8}{ st}
+\fl{}
+ \fl{ QCount ( r ) \.{\defeq} Cardinality ( \{ i \.{\in} 1 \.{\dotdot} Len (
+ task\_queue ) \.{:} task\_queue [ i ] \.{=} r \} )}
+\fl{}
+\fl{ BlobMatches ( b ,\, t ,\, q ,\, v ,\, s ) \.{\defeq}}
+\fl{ \.{\land}}\al{637}{1}{ blob\_storage [ b ] . tenant \.{=} t}
+\fl{ \.{\land}}\al{638}{1}{ blob\_storage [ b ] . query \.{=} q}
+\fl{ \.{\land}}\al{639}{1}{ blob\_storage [ b ] . version \.{=} v}
+\fl{ \.{\land}}\al{640}{1}{ blob\_storage [ b ] . security\_context \.{=} s}
+\fl{}
+\fl{ BlobCached ( b ) \.{\defeq}}
+ \fl{ \E\,}\al{643}{1}{ p}\al{643}{2}{ \.{\in}}\al{643}{3}{ ProxyNodes ,\, t
+ \.{\in} Tenants ,\, q \.{\in} Queries ,\,}
+ \fl{ v}\al{644}{1}{ \.{\in}}\al{644}{2}{ 1 \.{\dotdot} MaxSnapshot ,\, s
+ \.{\in} SecCtxs \.{:}}
+ \fl{ cache [ p ] [ t ] [ q ] [ v ] [ s ] . valid \.{\land} cache [ p ] [ t ]
+ [ q ] [ v ] [ s ] . blob\_id \.{=} b}
+\fl{}
+\fl{ BlobJobHeld ( b ) \.{\defeq}}
+ \fl{ \E\, r \.{\in} Requests \.{:} jobs [ r ] . blob\_ptr \.{=} b \.{\land}
+ {\lnot} client\_received [ r ] . released}
+\fl{}
+\fl{ BlobClientHeld ( b ) \.{\defeq}}
+ \fl{ \E\,}\al{651}{1}{ r \.{\in} Requests \.{:} client\_received [ r ] .
+ delivered}
+\fl{ \.{\land}}\al{652}{1}{ {\lnot} client\_received [ r ] . released}
+\fl{ \.{\land}}\al{653}{1}{ client\_received [ r ] . blob\_id \.{=} b}
+\fl{}
+ \fl{ StagedOrphan ( b ) \.{\defeq} jobs [ blob\_storage [ b ] . req ] .
+ lease\_epoch \.{\neq} blob\_storage [ b ] . epoch}
+\fl{}
+\fl{ GCable \.{\defeq} \{}\al{657}{3}{ b \.{\in} Blobs \.{:}}
+\fl{ \.{\land}}\al{658}{1}{ blob\_storage [ b ] . allocated}
+\fl{ \.{\land}}\al{659}{1}{ {\IF} blob\_storage [ b ] . staged}
+\fl{ \.{\THEN} StagedOrphan ( b )}
+ \fl{ \.{\ELSE} {\lnot} BlobCached ( b ) \.{\land} {\lnot} BlobJobHeld ( b )
+ \.{\land} {\lnot} BlobClientHeld ( b ) \}}
+\fl{}
+\fl{ ExpirableJobs \.{\defeq} \{ r}\al{663}{4}{ \.{\in} Requests \.{:}}
+\fl{ \.{\land}}\al{664}{1}{ jobs [ r ] . state \.{\in} Active}
+ \fl{ \.{\land}}\al{665}{1}{ ( worker\_status [ jobs [ r ] . owner ]
+ \.{\neq}\@w{ACTIVE} \.{\lor} lease\_expired [ r ] ) \}}
+\fl{}
+ \fl{ CachedKeys \.{\defeq} \{}\al{667}{3}{ k \.{\in} ProxyNodes \.{\times}
+ Tenants \.{\times} Queries \.{\times} ( 1 \.{\dotdot} MaxSnapshot )
+ \.{\times} SecCtxs \.{:}}
+ \fl{ cache [ k [ 1 ] ] [ k [ 2 ] ] [ k [ 3 ] ] [ k [ 4 ] ] [ k [ 5 ] ] .
+ valid \}}
+\fl{}
+\fl{}
+\fl{}
+\fl{}
+\fl{ Job\_Unauthorized ( j ) \.{\defeq}}
+\fl{ [ j {\EXCEPT} {\bang} . state \.{=}\@w{UNAUTHORIZED} ]}
+\fl{ Job\_Cached ( j ) \.{\defeq}}
+\fl{ [ j {\EXCEPT} {\bang} . state \.{=}\@w{CACHED} ]}
+\fl{}
+\fl{ Job\_Init ( j ,\, t ,\, sc ,\, v ) \.{\defeq}}
+ \fl{ [ j {\EXCEPT} {\bang} . tenant \.{=} t ,\, {\bang} . security\_context
+ \.{=} sc ,\, {\bang} . version \.{=} v ]}
+\fl{}
+\fl{ Job\_Flight\_Accepted ( j ,\, b ) \.{\defeq}}
+ \fl{ [ j {\EXCEPT}}\al{682}{3}{ {\bang}}\al{682}{4}{ . state
+ \.{=}\@w{ACCEPTED} ,\, {\bang} . lease\_epoch \.{=} 1 ,\, {\bang} . attempts
+ \.{=} 1 ,\,}
+ \fl{ {\bang}}\al{683}{1}{ . blob\_ptr \.{=} b ,\, {\bang} . rls\_applied
+ \.{=} {\TRUE} ,\, {\bang} . executed\_predicate\_tenant \.{=} j . tenant ]}
+\fl{}
+\fl{ Job\_Enqueue ( j ) \.{\defeq}}
+ \fl{ [ j {\EXCEPT} {\bang} . state \.{=}\@w{QUEUED} ,\, {\bang} . attempts
+ \.{=} j . attempts \.{+} 1 ]}
+\fl{}
+\fl{ Job\_Claim ( j ,\, w ) \.{\defeq}}
+ \fl{ [ j {\EXCEPT} {\bang} . owner \.{=} w ,\, {\bang} . state
+ \.{=}\@w{CLAIMED} ,\, {\bang} . lease\_epoch \.{=} j . lease\_epoch \.{+} 1
+ ]}
+\fl{}
+\fl{ Job\_Run ( j ) \.{\defeq}}
+ \fl{ [ j {\EXCEPT}}\al{692}{3}{ {\bang}}\al{692}{4}{ . state
+ \.{=}\@w{RUNNING} ,\, {\bang} . rls\_applied \.{=} {\TRUE} ,\,}
+\fl{ {\bang}}\al{693}{1}{ . executed\_predicate\_tenant \.{=} j . tenant ]}
+\fl{}
+\fl{ Job\_Stage ( j ,\, b ) \.{\defeq}}
+ \fl{ [ j {\EXCEPT} {\bang} . blob\_ptr \.{=} b ,\, {\bang} . state
+ \.{=}\@w{STAGED} ]}
+\fl{}
+\fl{ Job\_Accept ( j ) \.{\defeq}}
+ \fl{ [ j {\EXCEPT} {\bang} . state \.{=}\@w{ACCEPTED} ,\, {\bang} . owner
+ \.{=} NONE ]}
+\fl{}
+\fl{ Job\_Retry ( j ) \.{\defeq}}
+ \fl{ [ j {\EXCEPT}}\al{702}{3}{ {\bang}}\al{702}{4}{ . owner \.{=} NONE ,\,
+ {\bang} . state \.{=}\@w{QUEUED} ,\, {\bang} . attempts \.{=} j . attempts
+ \.{+} 1 ,\,}
+ \fl{ {\bang}}\al{703}{1}{ . lease\_epoch}\al{703}{3}{ \.{=}}\al{703}{4}{ j .
+ lease\_epoch \.{+} 1 ,\, {\bang} . blob\_ptr \.{=} NONE ,\,}
+ \fl{ {\bang}}\al{704}{1}{ . rls\_applied}\al{704}{3}{ \.{=}}\al{704}{4}{
+ {\FALSE} ,\, {\bang} . executed\_predicate\_tenant \.{=} NONE ]}
+\fl{}
+\fl{ Job\_Fail ( j ) \.{\defeq}}
+ \fl{ [ j {\EXCEPT}}\al{707}{3}{ {\bang}}\al{707}{4}{ . owner \.{=} NONE ,\,
+ {\bang} . state \.{=}\@w{FAILED} ,\, {\bang} . lease\_epoch \.{=} j .
+ lease\_epoch \.{+} 1 ,\,}
+ \fl{ {\bang}}\al{708}{1}{ . blob\_ptr \.{=} NONE ,\, {\bang} . rls\_applied
+ \.{=} {\FALSE} ,\, {\bang} . executed\_predicate\_tenant \.{=} NONE ]}
+\fl{}
+\fl{ Client\_Deliver ( cr ,\, b ,\, t ,\, q ,\, v ,\, sc ) \.{\defeq}}
+ \fl{ [ cr {\EXCEPT}}\al{711}{3}{ {\bang}}\al{711}{4}{ . delivered \.{=}
+ {\TRUE} ,\, {\bang} . blob\_id \.{=} b ,\, {\bang} . tenant \.{=} t ,\,}
+ \fl{ {\bang}}\al{712}{1}{ . query \.{=} q ,\, {\bang} . version \.{=} v ,\,
+ {\bang} . security\_context \.{=} sc ]}
+\fl{}
+\fl{ Client\_Release ( cr ) \.{\defeq}}
+\fl{ [ cr {\EXCEPT} {\bang} . released \.{=} {\TRUE} ]}
+\fl{}
+\fl{ Blob\_Flight ( t ,\, q ,\, v ,\, sc ) \.{\defeq}}
+ \fl{ [}\al{718}{1}{ allocated \.{\mapsto} {\TRUE} ,\, staged \.{\mapsto}
+ {\FALSE} ,\, req \.{\mapsto} NONE ,\, epoch \.{\mapsto} 0 ,\,}
+ \fl{ tenant \.{\mapsto} t ,\, query \.{\mapsto} q ,\, version \.{\mapsto} v
+ ,\, security\_context \.{\mapsto} sc ]}
+\fl{}
+\fl{ Blob\_Stage ( req ,\, ep ,\, t ,\, q ,\, v ,\, sc ) \.{\defeq}}
+ \fl{ [}\al{722}{1}{ allocated \.{\mapsto} {\TRUE} ,\, staged \.{\mapsto}
+ {\TRUE} ,\, req \.{\mapsto} req ,\, epoch \.{\mapsto} ep ,\,}
+ \fl{ tenant \.{\mapsto} t ,\, query \.{\mapsto} q ,\, version \.{\mapsto} v
+ ,\, security\_context \.{\mapsto} sc ]}
+\fl{}
+\fl{ Blob\_Commit ( b\_val ) \.{\defeq}}
+\fl{ [ b\_val {\EXCEPT} {\bang} . staged \.{=} {\FALSE} ]}
+\fl{}
+\fl{ ValidCache ( b ) \.{\defeq}}
+\fl{ [ valid \.{\mapsto} {\TRUE} ,\, blob\_id \.{\mapsto} b ]}
+\fl{}
+\fl{ InvalidateCache ( old\_cache ,\, t ,\, new\_v ) \.{\defeq}}
+\fl{ [ p}\al{732}{2}{ \.{\in} ProxyNodes \.{\mapsto}}
+\fl{ [}\al{733}{1}{ old\_cache [ p ] {\EXCEPT} {\bang} [ t ] \.{=}}
+\fl{ [ q}\al{734}{2}{ \.{\in} Queries \.{\mapsto}}
+\fl{ [ v}\al{735}{2}{ \.{\in} 1 \.{\dotdot} MaxSnapshot \.{\mapsto}}
+\fl{ [ s}\al{736}{2}{ \.{\in} SecCtxs \.{\mapsto}}
+\fl{ {\IF} v \.{<} new\_v}
+\fl{ \.{\THEN} NoEntry}
+\fl{ \.{\ELSE} old\_cache [ p ] [ t ] [ q ] [ v ] [ s ] ] ] ] ] ]}
+\fl{}
+\fl{}
+\fl{}
+\fl{}
+\fl{ TypeOK}\al{744}{1}{ \.{\defeq}}
+ \fl{ \.{\land}}\al{745}{1}{ catalog\_snapshot \.{\in} [ Tenants
+ \.{\rightarrow} 1 \.{\dotdot} MaxSnapshot ]}
+ \fl{ \.{\land}}\al{746}{1}{ worker\_status \.{\in} [ Workers \.{\rightarrow}
+ \{\@w{OFFLINE} ,\,\@w{ACTIVE} ,\,\@w{CRASHED} \} ]}
+ \fl{ \.{\land}}\al{747}{1}{ hash\_ring \.{\in} [ Tenants \.{\times} Queries
+ \.{\rightarrow} ProxyNodes ]}
+ \fl{ \.{\land}}\al{748}{1}{ \A\,}\al{748}{2}{ p}\al{748}{3}{
+ \.{\in}}\al{748}{4}{ ProxyNodes ,\, t \.{\in} Tenants ,\, q \.{\in} Queries
+ ,\,}
+ \fl{ v}\al{749}{1}{ \.{\in}}\al{749}{2}{ 1 \.{\dotdot} MaxSnapshot ,\, s
+ \.{\in} SecCtxs \.{:}}
+\fl{ cache [ p ] [ t ] [ q ] [ v ] [ s ] . valid \.{\in} {\BOOLEAN}}
+\fl{ \.{\land}}\al{751}{1}{ \A\,}\al{751}{2}{ r \.{\in} Requests \.{:}}
+\fl{ \.{\land}}\al{752}{1}{ jobs [ r ] . state \.{\in} AllStates}
+ \fl{ \.{\land}}\al{753}{1}{ jobs [ r ] . attempts \.{\in} 0 \.{\dotdot}
+ MaxAttempts}
+\fl{ \.{\land}}\al{754}{1}{ jobs [ r ] . lease\_epoch \.{\in} Nat}
+ \fl{ \.{\land}}\al{755}{1}{ jobs [ r ] . blob\_ptr \.{\in} Blobs \.{\cup} \{
+ NONE \}}
+\fl{ \.{\land}}\al{756}{1}{ commit\_count [ r ] \.{\in} 0 \.{\dotdot} 1}
+ \fl{ \.{\land}}\al{757}{1}{ client\_received [ r ] . delivered \.{\implies}
+ client\_received [ r ] . blob\_id \.{\neq} NONE}
+\fl{}
+\fl{ TenantBinding \.{\defeq}}
+\fl{ \A\,}\al{760}{1}{ r \.{\in} Requests \.{:}}
+ \fl{ jobs}\al{761}{1}{ [ r ] . state \.{\notin} \{\@w{IDLE}
+ ,\,\@w{UNAUTHORIZED} ,\,\@w{CACHED} \} \.{\implies}}
+ \fl{ \.{\land}}\al{762}{1}{ jobs [ r ] . tenant \.{=} AuthenticatedTenantOf [
+ r ]}
+ \fl{ \.{\land}}\al{763}{1}{ jobs [ r ] . security\_context \.{=}
+ SecurityContextOf [ r ]}
+\fl{}
+\fl{ RLSEnforcement \.{\defeq}}
+\fl{ \A\,}\al{766}{1}{ r \.{\in} Requests \.{:}}
+ \fl{ jobs}\al{767}{1}{ [ r ] . state \.{\in} \{\@w{RUNNING} ,\,\@w{STAGED}
+ ,\,\@w{ACCEPTED} \} \.{\implies}}
+\fl{ \.{\land}}\al{768}{1}{ jobs [ r ] . rls\_applied}
+ \fl{ \.{\land}}\al{769}{1}{ jobs [ r ] . executed\_predicate\_tenant \.{=}
+ AuthenticatedTenantOf [ r ]}
+\fl{}
+\fl{ UnauthorizedIsInert \.{\defeq}}
+\fl{ \A\,}\al{772}{1}{ r \.{\in} Requests \.{:}}
+\fl{ jobs}\al{773}{1}{ [ r ] . state \.{=}\@w{UNAUTHORIZED} \.{\implies}}
+\fl{ \.{\land}}\al{774}{1}{ jobs [ r ] . blob\_ptr \.{=} NONE}
+\fl{ \.{\land}}\al{775}{1}{ jobs [ r ] . owner \.{=} NONE}
+\fl{ \.{\land}}\al{776}{1}{ jobs [ r ] . attempts \.{=} 0}
+\fl{ \.{\land}}\al{777}{1}{ commit\_count [ r ] \.{=} 0}
+\fl{ \.{\land}}\al{778}{1}{ {\lnot} client\_received [ r ] . delivered}
+\fl{ \.{\land}}\al{779}{1}{ QCount ( r ) \.{=} 0}
+\fl{}
+\fl{ MismatchRejected \.{\defeq}}
+\fl{ \A\,}\al{782}{1}{ r \.{\in} Requests \.{:}}
+ \fl{ RequestedTenantOf [ r ]}\al{783}{4}{ \.{\neq} AuthenticatedTenantOf [ r
+ ] \.{\implies}}
+ \fl{ \.{\land}}\al{784}{1}{ jobs [ r ] . state}\al{784}{7}{ \.{\in}
+ \{\@w{IDLE} ,\,\@w{UNAUTHORIZED} \}}
+\fl{ \.{\land}}\al{785}{1}{ {\lnot} client\_received [ r ] . delivered}
+\fl{}
+\fl{ TenantIsolation \.{\defeq}}
+\fl{ \A\,}\al{788}{1}{ r \.{\in} Requests \.{:}}
+\fl{ client\_received [ r ] . delivered \.{\implies}}
+ \fl{ \.{\land}}\al{790}{1}{ client\_received [ r ] . tenant \.{=}
+ AuthenticatedTenantOf [ r ]}
+ \fl{ \.{\land}}\al{791}{1}{ client\_received [ r ] . security\_context \.{=}
+ SecurityContextOf [ r ]}
+ \fl{ \.{\land}}\al{792}{1}{ client\_received [ r ] . query \.{=} QueryOf [ r
+ ]}
+\fl{}
+\fl{ DeliveredResultIntegrity \.{\defeq}}
+\fl{ \A\,}\al{795}{1}{ r \.{\in} Requests \.{:}}
+ \fl{ (}\al{796}{1}{ client\_received [ r ] . delivered \.{\land} {\lnot}
+ client\_received [ r ] . released ) \.{\implies}}
+ \fl{ \.{\land}}\al{797}{1}{ blob\_storage [ client\_received [ r ] . blob\_id
+ ] . allocated}
+ \fl{ \.{\land}}\al{798}{1}{ {\lnot} blob\_storage [ client\_received [ r ] .
+ blob\_id ] . staged}
+ \fl{ \.{\land}}\al{799}{1}{ BlobMatches (}\al{799}{3}{ client\_received [ r ]
+ . blob\_id ,\,}
+\fl{ AuthenticatedTenantOf [ r ] ,\, QueryOf [ r ] ,\,}
+\fl{ client\_received [ r ] . version ,\, SecurityContextOf [ r ] )}
+\fl{}
+\fl{ ClaimCheckIntegrity \.{\defeq}}
+\fl{ \A\,}\al{804}{1}{ r \.{\in} Requests \.{:}}
+ \fl{ (}\al{805}{1}{ jobs [ r ] . state \.{=}\@w{ACCEPTED} \.{\land} {\lnot}
+ client\_received [ r ] . released ) \.{\implies}}
+ \fl{ \.{\land}}\al{806}{1}{ blob\_storage [ jobs [ r ] . blob\_ptr ] .
+ allocated}
+ \fl{ \.{\land}}\al{807}{1}{ {\lnot} blob\_storage [ jobs [ r ] . blob\_ptr ]
+ . staged}
+ \fl{ \.{\land}}\al{808}{1}{ BlobMatches (}\al{808}{3}{ jobs [ r ] . blob\_ptr
+ ,\, jobs [ r ] . tenant ,\, jobs [ r ] . query ,\,}
+\fl{ jobs [ r ] . version ,\, jobs [ r ] . security\_context )}
+\fl{}
+\fl{ BlobPtrIffResultState \.{\defeq}}
+\fl{ \A\,}\al{812}{1}{ r \.{\in} Requests \.{:}}
+\fl{ (}\al{813}{1}{ jobs [ r ] . blob\_ptr \.{\neq} NONE ) \.{\equiv}}
+\fl{ ( jobs [ r ] . state \.{\in} \{\@w{STAGED} ,\,\@w{ACCEPTED} \} )}
+\fl{}
+\fl{ NoSharedBlobPointer \.{\defeq}}
+\fl{ \A\,}\al{817}{1}{ r1 ,\, r2 \.{\in} Requests \.{:}}
+ \fl{ (}\al{818}{1}{ r1}\al{818}{2}{ \.{\neq} r2 \.{\land} jobs [ r1 ] .
+ blob\_ptr \.{\neq} NONE \.{\land} jobs [ r2 ] . blob\_ptr \.{\neq} NONE}
+ \fl{ \.{\land}}\al{819}{1}{ {\lnot} client\_received [ r1 ] . released
+ \.{\land} {\lnot} client\_received [ r2 ] . released ) \.{\implies}}
+\fl{ jobs [ r1 ] . blob\_ptr \.{\neq} jobs [ r2 ] . blob\_ptr}
+\fl{}
+\fl{ BlobPoolConsistency \.{\defeq}}
+ \fl{ available\_blobs \.{=} \{ b \.{\in} Blobs \.{:} {\lnot} blob\_storage [
+ b ] . allocated \}}
+\fl{}
+\fl{ StagedBlobWellFormed \.{\defeq}}
+\fl{ \A\,}\al{826}{1}{ b \.{\in} Blobs \.{:}}
+\fl{ blob\_storage [ b ] . staged \.{\implies}}
+\fl{ \.{\land}}\al{828}{1}{ blob\_storage [ b ] . allocated}
+\fl{ \.{\land}}\al{829}{1}{ blob\_storage [ b ] . req \.{\in} Requests}
+ \fl{ \.{\land}}\al{830}{1}{ jobs [ blob\_storage [ b ] . req ] . lease\_epoch
+ \.{\geq} blob\_storage [ b ] . epoch}
+\fl{}
+\fl{ CacheIntegrity \.{\defeq}}
+ \fl{ \A\,}\al{833}{1}{ p}\al{833}{2}{ \.{\in}}\al{833}{3}{ ProxyNodes ,\, t
+ \.{\in} Tenants ,\, q \.{\in} Queries ,\,}
+ \fl{ v}\al{834}{1}{ \.{\in}}\al{834}{2}{ 1 \.{\dotdot} MaxSnapshot ,\, s
+ \.{\in} SecCtxs \.{:}}
+\fl{ cache [ p ] [ t ] [ q ] [ v ] [ s ] . valid \.{\implies}}
+ \fl{ \.{\land}}\al{836}{1}{ blob\_storage [ cache [ p ] [ t ] [ q ] [ v ] [ s
+ ] . blob\_id ] . allocated}
+ \fl{ \.{\land}}\al{837}{1}{ {\lnot} blob\_storage [ cache [ p ] [ t ] [ q ] [
+ v ] [ s ] . blob\_id ] . staged}
+ \fl{ \.{\land}}\al{838}{1}{ BlobMatches ( cache [ p ] [ t ] [ q ] [ v ] [ s ]
+ . blob\_id ,\, t ,\, q ,\, v ,\, s )}
+\fl{}
+\fl{ CacheFreshness \.{\defeq}}
+ \fl{ \A\,}\al{841}{1}{ p}\al{841}{2}{ \.{\in}}\al{841}{3}{ ProxyNodes ,\, t
+ \.{\in} Tenants ,\, q \.{\in} Queries ,\,}
+ \fl{ v}\al{842}{1}{ \.{\in}}\al{842}{2}{ 1 \.{\dotdot} MaxSnapshot ,\, s
+ \.{\in} SecCtxs \.{:}}
+ \fl{ cache [ p ] [ t ] [ q ] [ v ] [ s ] . valid \.{\implies} v \.{=}
+ catalog\_snapshot [ t ]}
+\fl{}
+\fl{ ExactlyOnceCommit \.{\defeq}}
+\fl{ \A\,}\al{846}{1}{ r \.{\in} Requests \.{:}}
+\fl{ \.{\land}}\al{847}{1}{ commit\_count [ r ] \.{\leq} 1}
+ \fl{ \.{\land}}\al{848}{1}{ ( jobs [ r ] . state \.{=}\@w{ACCEPTED} )
+ \.{\equiv} ( commit\_count [ r ] \.{=} 1 )}
+\fl{}
+\fl{ FailedImpliesExhausted \.{\defeq}}
+\fl{ \A\,}\al{851}{1}{ r \.{\in} Requests \.{:}}
+ \fl{ jobs [ r ] . state \.{=}\@w{FAILED} \.{\implies} jobs [ r ] . attempts
+ \.{=} MaxAttempts}
+\fl{}
+\fl{ LeaseOwnership \.{\defeq}}
+\fl{ \A\,}\al{855}{1}{ r \.{\in} Requests \.{:}}
+ \fl{ \.{\land}}\al{856}{1}{ jobs [ r ] . state}\al{856}{7}{ \.{\in} Active
+ \.{\implies} jobs [ r ] . owner \.{\in} Workers}
+ \fl{ \.{\land}}\al{857}{1}{ jobs [ r ] . state}\al{857}{7}{ \.{\notin} Active
+ \.{\implies} jobs [ r ] . owner \.{=} NONE}
+\fl{}
+\fl{ QueueConsistency \.{\defeq}}
+\fl{ \A\,}\al{860}{1}{ r \.{\in} Requests \.{:}}
+ \fl{ \.{\land}}\al{861}{1}{ jobs [ r ] . state}\al{861}{7}{ \.{=}\@w{QUEUED}
+ \.{\implies} QCount ( r ) \.{=} 1}
+ \fl{ \.{\land}}\al{862}{1}{ jobs [ r ] . state}\al{862}{7}{
+ \.{\neq}\@w{QUEUED} \.{\implies} QCount ( r ) \.{=} 0}
+\fl{}
+\fl{ FlightIsLocal \.{\defeq}}
+\fl{ \A\,}\al{865}{1}{ r \.{\in} Requests \.{:}}
+\fl{ ProtocolOf [ r ] \.{=}\@w{FLIGHT} \.{\implies}}
+ \fl{ \.{\land}}\al{867}{1}{ jobs [ r ] . state}\al{867}{7}{ \.{\in}
+ \{\@w{IDLE} ,\,\@w{ACCEPTED} ,\,\@w{UNAUTHORIZED} \}}
+\fl{ \.{\land}}\al{868}{1}{ jobs [ r ] . owner}\al{868}{7}{ \.{=} NONE}
+\fl{ \.{\land}}\al{869}{1}{ QCount ( r ) \.{=} 0}
+\fl{}
+\fl{ SnapshotBound \.{\defeq}}
+\fl{ \A\,}\al{872}{1}{ r \.{\in} Requests \.{:}}
+ \fl{ \.{\land}}\al{873}{1}{ jobs}\al{873}{2}{ [ r ] . state \.{\notin}
+ \{\@w{IDLE} ,\,\@w{UNAUTHORIZED} ,\,\@w{CACHED} \} \.{\implies}}
+ \fl{ jobs [ r ] . version \.{\in} 1 \.{\dotdot} catalog\_snapshot [ jobs [ r
+ ] . tenant ]}
+\fl{ \.{\land}}\al{875}{1}{ client\_received [ r ] . delivered \.{\implies}}
+\fl{ client\_received [ r ] . version}
+\fl{ \.{\in} 1 \.{\dotdot} catalog\_snapshot [ AuthenticatedTenantOf [ r ] ]}
+\fl{}
+ \fl{ {\VARIABLES} req\_version ,\, proxy ,\, curr\_req ,\, curr\_epoch ,\,
+ curr\_blob ,\, curr\_proxy}
+\fl{}
+ \fl{ vars \.{\defeq} {\langle}}\al{881}{3}{ pc ,\, hash\_ring ,\,
+ catalog\_snapshot ,\, cache ,\, task\_queue ,\, jobs ,\,}
+ \fl{ blob\_storage ,\, available\_blobs ,\, worker\_status ,\,
+ client\_received ,\,}
+ \fl{ commit\_count ,\, lease\_expired ,\, crashes ,\, timeouts ,\,
+ req\_version ,\, proxy ,\,}
+\fl{ curr\_req ,\, curr\_epoch ,\, curr\_blob ,\, curr\_proxy {\rangle}}
+\fl{}
+ \fl{ ProcSet \.{\defeq} ( Requests ) \.{\cup} ( Workers ) \.{\cup}
+ \{\@w{KedaAutoscaler} \} \.{\cup} \{\@w{TimeoutInjector} \} \.{\cup}
+ \{\@w{LeaseManager} \} \.{\cup} \{\@w{Crasher} \} \.{\cup} \{\@w{Recoverer}
+ \} \.{\cup} \{\@w{GarbageCollector} \} \.{\cup} \{\@w{CacheEvictor} \}
+ \.{\cup} \{\@w{LakehouseETL} \}}
+\fl{}
+\fl{ Init \.{\defeq}}\al{888}{2}{%
+\@y{\@s{0}%
+ Global variables
+}%
+}
+ \fl{ \.{\land}}\al{889}{1}{ hash\_ring \.{\in} [ Tenants \.{\times} Queries
+ \.{\rightarrow} ProxyNodes ]}
+ \fl{ \.{\land}}\al{890}{1}{ catalog\_snapshot \.{=} [ t \.{\in} Tenants
+ \.{\mapsto} 1 ]}
+ \fl{ \.{\land}}\al{891}{1}{ cache \.{=} [ p}\al{891}{5}{ \.{\in} ProxyNodes
+ \.{\mapsto}}
+\fl{ [ t}\al{892}{2}{ \.{\in} Tenants \.{\mapsto}}
+\fl{ [ q}\al{893}{2}{ \.{\in} Queries \.{\mapsto}}
+\fl{ [ v}\al{894}{2}{ \.{\in} 1 \.{\dotdot} MaxSnapshot \.{\mapsto}}
+\fl{ [ s \.{\in} SecCtxs \.{\mapsto} NoEntry ] ] ] ] ]}
+ \fl{ \.{\land}}\al{896}{1}{ task\_queue}\al{896}{2}{ \.{=} {\langle}
+ {\rangle}}
+ \fl{ \.{\land}}\al{897}{1}{ jobs \.{=} [}\al{897}{4}{ r \.{\in} Requests
+ \.{\mapsto}}
+\fl{ [}\al{898}{1}{ state}\al{898}{2}{ \.{\mapsto}}\al{898}{3}{\@w{IDLE} ,\,}
+\fl{ owner}\al{899}{1}{ \.{\mapsto}}\al{899}{2}{ NONE ,\,}
+\fl{ lease\_epoch}\al{900}{1}{ \.{\mapsto} 0 ,\,}
+\fl{ attempts}\al{901}{1}{ \.{\mapsto} 0 ,\,}
+\fl{ requested\_tenant}\al{902}{1}{ \.{\mapsto} RequestedTenantOf [ r ] ,\,}
+\fl{ tenant}\al{903}{1}{ \.{\mapsto} NONE ,\,}
+\fl{ query}\al{904}{1}{ \.{\mapsto} QueryOf [ r ] ,\,}
+\fl{ security\_context}\al{905}{1}{ \.{\mapsto} NONE ,\,}
+\fl{ version}\al{906}{1}{ \.{\mapsto} 0 ,\,}
+\fl{ blob\_ptr}\al{907}{1}{ \.{\mapsto} NONE ,\,}
+\fl{ protocol}\al{908}{1}{ \.{\mapsto} ProtocolOf [ r ] ,\,}
+\fl{ rls\_applied}\al{909}{1}{ \.{\mapsto} {\FALSE} ,\,}
+\fl{ executed\_predicate\_tenant}\al{910}{1}{ \.{\mapsto} NONE ] ]}
+ \fl{ \.{\land}}\al{911}{1}{ blob\_storage \.{=} [ b \.{\in} Blobs \.{\mapsto}
+ FreeBlob ]}
+\fl{ \.{\land}}\al{912}{1}{ available\_blobs \.{=} Blobs}
+ \fl{ \.{\land}}\al{913}{1}{ worker\_status \.{=} [ w \.{\in} Workers
+ \.{\mapsto}\@w{OFFLINE} ]}
+ \fl{ \.{\land}}\al{914}{1}{ client\_received \.{=} [}\al{914}{4}{ r \.{\in}
+ Requests \.{\mapsto}}
+ \fl{ [}\al{915}{1}{ delivered}\al{915}{2}{ \.{\mapsto}}\al{915}{3}{ {\FALSE}
+ ,\,}
+\fl{ released}\al{916}{1}{ \.{\mapsto}}\al{916}{2}{ {\FALSE} ,\,}
+\fl{ blob\_id}\al{917}{1}{ \.{\mapsto} NONE ,\,}
+\fl{ tenant}\al{918}{1}{ \.{\mapsto} NONE ,\,}
+\fl{ query}\al{919}{1}{ \.{\mapsto} NONE ,\,}
+\fl{ version}\al{920}{1}{ \.{\mapsto} 0 ,\,}
+\fl{ security\_context}\al{921}{1}{ \.{\mapsto} NONE ] ]}
+ \fl{ \.{\land}}\al{922}{1}{ commit\_count \.{=} [ r \.{\in} Requests
+ \.{\mapsto} 0 ]}
+ \fl{ \.{\land}}\al{923}{1}{ lease\_expired \.{=} [ r \.{\in} Requests
+ \.{\mapsto} {\FALSE} ]}
+\fl{ \.{\land}}\al{924}{1}{ crashes \.{=} 0}
+\fl{ \.{\land}}\al{925}{1}{ timeouts \.{=} 0}
+\fl{}
+ \fl{ \.{\land}}\al{927}{1}{ req\_version \.{=} [ self \.{\in} Requests
+ \.{\mapsto} 0 ]}
+ \fl{ \.{\land}}\al{928}{1}{ proxy \.{=} [ self \.{\in} Requests \.{\mapsto}
+ NONE ]}
+\fl{}
+ \fl{ \.{\land}}\al{930}{1}{ curr\_req \.{=} [ self \.{\in} Workers
+ \.{\mapsto} NONE ]}
+ \fl{ \.{\land}}\al{931}{1}{ curr\_epoch \.{=} [ self \.{\in} Workers
+ \.{\mapsto} 0 ]}
+ \fl{ \.{\land}}\al{932}{1}{ curr\_blob \.{=} [ self \.{\in} Workers
+ \.{\mapsto} NONE ]}
+ \fl{ \.{\land}}\al{933}{1}{ curr\_proxy}\al{933}{2}{ \.{=} [ self \.{\in}
+ Workers \.{\mapsto} NONE ]}
+ \fl{ \.{\land}}\al{934}{1}{ pc \.{=} [ self}\al{934}{5}{ \.{\in} ProcSet
+ \.{\mapsto}}\al{934}{8}{ {\CASE}}\al{934}{9}{ self}\al{934}{10}{
+ \.{\in}}\al{934}{11}{ Requests \.{\rightarrow}\@w{Start}}
+ \fl{ {\Box}}\al{935}{1}{ self}\al{935}{2}{ \.{\in}}\al{935}{3}{ Workers
+ \.{\rightarrow}\@w{ClaimTask}}
+ \fl{ {\Box}}\al{936}{1}{ self}\al{936}{2}{ \.{=}\@w{KedaAutoscaler}
+ \.{\rightarrow}\@w{ScaleLoop}}
+ \fl{ {\Box}}\al{937}{1}{ self}\al{937}{2}{ \.{=}\@w{TimeoutInjector}
+ \.{\rightarrow}\@w{InjectLoop}}
+ \fl{ {\Box}}\al{938}{1}{ self}\al{938}{2}{ \.{=}\@w{LeaseManager}
+ \.{\rightarrow}\@w{LeaseLoop}}
+ \fl{ {\Box}}\al{939}{1}{ self}\al{939}{2}{ \.{=}\@w{Crasher}
+ \.{\rightarrow}\@w{CrashLoop}}
+ \fl{ {\Box}}\al{940}{1}{ self}\al{940}{2}{ \.{=}\@w{Recoverer}
+ \.{\rightarrow}\@w{RecoverLoop}}
+ \fl{ {\Box}}\al{941}{1}{ self}\al{941}{2}{ \.{=}\@w{GarbageCollector}
+ \.{\rightarrow}\@w{GCLoop}}
+ \fl{ {\Box}}\al{942}{1}{ self}\al{942}{2}{
+ \.{=}\@w{CacheEvictor}}\al{942}{4}{
+ \.{\rightarrow}}\al{942}{5}{\@w{EvictLoop}}
+ \fl{ {\Box}}\al{943}{1}{ self}\al{943}{2}{
+ \.{=}\@w{LakehouseETL}}\al{943}{4}{
+ \.{\rightarrow}}\al{943}{5}{\@w{ETLCommit} ]}
+\fl{}
+ \fl{ Start ( self ) \.{\defeq}}\al{945}{5}{ \.{\land}}\al{945}{6}{ pc [ self
+ ] \.{=}\@w{Start}}
+ \fl{ \.{\land}}\al{946}{1}{ {\IF}}\al{946}{2}{ {\lnot} MutantSkipTenantCheck
+ \.{\land} AuthenticatedTenantOf [ self ] \.{\neq} RequestedTenantOf [ self ]}
+ \fl{ \.{\THEN}}\al{947}{1}{ \.{\land}}\al{947}{2}{ jobs \.{'} \.{=} [ jobs
+ {\EXCEPT} {\bang} [ self ] \.{=} Job\_Unauthorized ( jobs [ self ] ) ]}
+ \fl{ \.{\land}}\al{948}{1}{ pc \.{'}}\al{948}{3}{ \.{=}}\al{948}{4}{ [ pc
+ {\EXCEPT} {\bang} [ self ]}\al{948}{11}{ \.{=}}\al{948}{12}{\@w{Finish} ]}
+ \fl{ \.{\ELSE}}\al{949}{1}{ \.{\land}}\al{949}{2}{ pc \.{'}}\al{949}{4}{
+ \.{=}}\al{949}{5}{ [ pc {\EXCEPT} {\bang} [ self ]}\al{949}{12}{
+ \.{=}}\al{949}{13}{\@w{BindSnapshot} ]}
+\fl{ \.{\land}}\al{950}{1}{ jobs \.{'} \.{=} jobs}
+ \fl{ \.{\land}}\al{951}{1}{ {\UNCHANGED} {\langle}}\al{951}{3}{ hash\_ring
+ ,\, catalog\_snapshot ,\, cache ,\, task\_queue ,\,}
+\fl{ blob\_storage ,\, available\_blobs ,\, worker\_status ,\,}
+\fl{ client\_received ,\, commit\_count ,\, lease\_expired ,\,}
+\fl{ crashes ,\, timeouts ,\, req\_version ,\, proxy ,\, curr\_req ,\,}
+\fl{ curr\_epoch ,\, curr\_blob ,\, curr\_proxy {\rangle}}
+\fl{}
+ \fl{ BindSnapshot ( self ) \.{\defeq}}\al{957}{5}{ \.{\land}}\al{957}{6}{ pc
+ [ self ] \.{=}\@w{BindSnapshot}}
+ \fl{ \.{\land}}\al{958}{1}{ req\_version \.{'} \.{=} [ req\_version {\EXCEPT}
+ {\bang} [ self ] \.{=} catalog\_snapshot [ EffTenant ( self ) ] ]}
+ \fl{ \.{\land}}\al{959}{1}{ proxy \.{'} \.{=} [ proxy {\EXCEPT} {\bang} [
+ self ] \.{=} hash\_ring [ EffTenant ( self ) ,\, QueryOf [ self ] ] ]}
+ \fl{ \.{\land}}\al{960}{1}{ pc \.{'} \.{=} [ pc {\EXCEPT} {\bang} [ self ]
+ \.{=}\@w{CheckCache} ]}
+ \fl{ \.{\land}}\al{961}{1}{ {\UNCHANGED} {\langle}}\al{961}{3}{ hash\_ring
+ ,\, catalog\_snapshot ,\, cache ,\,}
+\fl{ task\_queue ,\, jobs ,\, blob\_storage ,\,}
+\fl{ available\_blobs ,\, worker\_status ,\,}
+\fl{ client\_received ,\, commit\_count ,\,}
+\fl{ lease\_expired ,\, crashes ,\, timeouts ,\,}
+\fl{ curr\_req ,\, curr\_epoch ,\, curr\_blob ,\,}
+\fl{ curr\_proxy {\rangle}}
+\fl{}
+ \fl{ CheckCache ( self ) \.{\defeq}}\al{969}{5}{ \.{\land}}\al{969}{6}{ pc [
+ self ] \.{=}\@w{CheckCache}}
+ \fl{ \.{\land}}\al{970}{1}{ {\IF}}\al{970}{2}{ cache [ proxy [ self ] ] [
+ EffTenant ( self ) ] [ QueryOf [ self ] ] [ req\_version [ self ] ] [
+ SecurityContextOf [ self ] ] . valid}
+ \fl{ \.{\THEN}}\al{971}{1}{ \.{\land}}\al{971}{2}{ client\_received \.{'}
+ \.{=} [ client\_received {\EXCEPT} {\bang} [ self ]}\al{971}{12}{ \.{=}
+ Client\_Deliver ( client\_received [ self ] ,\,}
+ \fl{ cache [ proxy [ self ] ] [ EffTenant ( self ) ] [ QueryOf [ self ] ] [
+ req\_version [ self ] ] [ SecurityContextOf [ self ] ] . blob\_id ,\,}
+ \fl{ EffTenant ( self ) ,\, QueryOf [ self ] ,\, req\_version [ self ] ,\,
+ SecurityContextOf [ self ] ) ]}
+ \fl{ \.{\land}}\al{974}{1}{ jobs \.{'} \.{=} [ jobs {\EXCEPT} {\bang} [ self
+ ] \.{=} Job\_Cached ( jobs [ self ] ) ]}
+ \fl{ \.{\land}}\al{975}{1}{ pc \.{'}}\al{975}{3}{ \.{=}}\al{975}{4}{ [ pc
+ {\EXCEPT} {\bang} [ self ]}\al{975}{11}{ \.{=}}\al{975}{12}{\@w{Finish} ]}
+ \fl{ \.{\ELSE}}\al{976}{1}{ \.{\land}}\al{976}{2}{ pc \.{'}}\al{976}{4}{
+ \.{=}}\al{976}{5}{ [ pc {\EXCEPT} {\bang} [ self ]}\al{976}{12}{
+ \.{=}}\al{976}{13}{\@w{InitializeJob} ]}
+ \fl{ \.{\land}}\al{977}{1}{ {\UNCHANGED} {\langle} jobs ,\, client\_received
+ {\rangle}}
+ \fl{ \.{\land}}\al{978}{1}{ {\UNCHANGED} {\langle}}\al{978}{3}{ hash\_ring
+ ,\, catalog\_snapshot ,\, cache ,\,}
+\fl{ task\_queue ,\, blob\_storage ,\, available\_blobs ,\,}
+\fl{ worker\_status ,\, commit\_count ,\, lease\_expired ,\,}
+\fl{ crashes ,\, timeouts ,\, req\_version ,\, proxy ,\,}
+\fl{ curr\_req ,\, curr\_epoch ,\, curr\_blob ,\,}
+\fl{ curr\_proxy {\rangle}}
+\fl{}
+ \fl{ InitializeJob ( self ) \.{\defeq}}\al{985}{5}{ \.{\land}}\al{985}{6}{ pc
+ [ self ] \.{=}\@w{InitializeJob}}
+ \fl{ \.{\land}}\al{986}{1}{ jobs \.{'} \.{=} [ jobs {\EXCEPT} {\bang} [ self
+ ] \.{=} Job\_Init ( jobs [ self ] ,\, EffTenant ( self ) ,\,
+ SecurityContextOf [ self ] ,\, req\_version [ self ] ) ]}
+ \fl{ \.{\land}}\al{987}{1}{ pc \.{'} \.{=} [ pc {\EXCEPT} {\bang} [ self ]
+ \.{=}\@w{Route} ]}
+ \fl{ \.{\land}}\al{988}{1}{ {\UNCHANGED} {\langle}}\al{988}{3}{ hash\_ring
+ ,\, catalog\_snapshot ,\, cache ,\,}
+\fl{ task\_queue ,\, blob\_storage ,\,}
+\fl{ available\_blobs ,\, worker\_status ,\,}
+\fl{ client\_received ,\, commit\_count ,\,}
+\fl{ lease\_expired ,\, crashes ,\, timeouts ,\,}
+\fl{ req\_version ,\, proxy ,\, curr\_req ,\,}
+\fl{ curr\_epoch ,\, curr\_blob ,\, curr\_proxy {\rangle}}
+\fl{}
+ \fl{ Route ( self ) \.{\defeq}}\al{996}{5}{ \.{\land}}\al{996}{6}{ pc [ self
+ ] \.{=}\@w{Route}}
+ \fl{ \.{\land}}\al{997}{1}{ {\IF}}\al{997}{2}{ ProtocolOf [ self ]
+ \.{=}\@w{FLIGHT}}
+ \fl{ \.{\THEN}}\al{998}{1}{ \.{\land}}\al{998}{2}{ pc \.{'}}\al{998}{4}{
+ \.{=}}\al{998}{5}{ [ pc {\EXCEPT} {\bang} [ self ]}\al{998}{12}{
+ \.{=}}\al{998}{13}{\@w{ExecuteFlight} ]}
+ \fl{ \.{\ELSE}}\al{999}{1}{ \.{\land}}\al{999}{2}{ pc \.{'}}\al{999}{4}{
+ \.{=}}\al{999}{5}{ [ pc {\EXCEPT} {\bang} [ self ]}\al{999}{12}{
+ \.{=}}\al{999}{13}{\@w{EnqueueREST} ]}
+ \fl{ \.{\land}}\al{1000}{1}{ {\UNCHANGED} {\langle}}\al{1000}{3}{ hash\_ring
+ ,\, catalog\_snapshot ,\, cache ,\, task\_queue ,\,}
+\fl{ jobs ,\, blob\_storage ,\, available\_blobs ,\,}
+\fl{ worker\_status ,\, client\_received ,\, commit\_count ,\,}
+\fl{ lease\_expired ,\, crashes ,\, timeouts ,\, req\_version ,\,}
+\fl{ proxy ,\, curr\_req ,\, curr\_epoch ,\, curr\_blob ,\,}
+\fl{ curr\_proxy {\rangle}}
+\fl{}
+ \fl{ ExecuteFlight ( self ) \.{\defeq}}\al{1007}{5}{ \.{\land}}\al{1007}{6}{
+ pc [ self ] \.{=}\@w{ExecuteFlight}}
+\fl{ \.{\land}}\al{1008}{1}{ available\_blobs \.{\neq} \{ \}}
+\fl{ \.{\land}}\al{1009}{1}{ \E\, b \.{\in} available\_blobs \.{:}}
+ \fl{ \.{\land}}\al{1010}{1}{ available\_blobs \.{'} \.{=} available\_blobs
+ \.{\,\backslash\,} \{ b \}}
+ \fl{ \.{\land}}\al{1011}{1}{ blob\_storage \.{'} \.{=} [ blob\_storage
+ {\EXCEPT} {\bang} [ b ] \.{=} Blob\_Flight ( jobs [ self ] . tenant ,\, jobs
+ [ self ] . query ,\, jobs [ self ] . version ,\, jobs [ self ] .
+ security\_context ) ]}
+ \fl{ \.{\land}}\al{1012}{1}{ jobs \.{'} \.{=} [ jobs {\EXCEPT} {\bang} [ self
+ ] \.{=} Job\_Flight\_Accepted ( jobs [ self ] ,\, b ) ]}
+ \fl{ \.{\land}}\al{1013}{1}{ commit\_count \.{'} \.{=} [ commit\_count
+ {\EXCEPT} {\bang} [ self ] \.{=} commit\_count [ self ] \.{+} 1 ]}
+ \fl{ \.{\land}}\al{1014}{1}{ client\_received \.{'} \.{=} [ client\_received
+ {\EXCEPT} {\bang} [ self ] \.{=} Client\_Deliver ( client\_received [ self ]
+ ,\, b ,\, jobs \.{'} [ self ] . tenant ,\, jobs \.{'} [ self ] . query ,\,
+ jobs \.{'} [ self ] . version ,\, jobs \.{'} [ self ] . security\_context )
+ ]}
+ \fl{ \.{\land}}\al{1015}{1}{ {\IF}}\al{1015}{2}{ FlightPopulatesCache
+ \.{\land} jobs \.{'} [ self ] . version \.{=} catalog\_snapshot [ jobs \.{'}
+ [ self ] . tenant ]}
+ \fl{ \.{\THEN}}\al{1016}{1}{ \.{\land}}\al{1016}{2}{ cache \.{'} \.{=} [
+ cache {\EXCEPT} {\bang}}\al{1016}{9}{ [ proxy [ self ] ] [ jobs \.{'} [ self
+ ] . tenant ] [ jobs \.{'} [ self ] . query ]}
+ \fl{ [ jobs \.{'} [ self ] . version ] [ jobs \.{'} [ self ] .
+ security\_context ] \.{=} ValidCache ( b ) ]}
+\fl{ \.{\ELSE}}\al{1018}{1}{ \.{\land}}\al{1018}{2}{ {\TRUE}}
+\fl{ \.{\land}}\al{1019}{1}{ cache \.{'} \.{=} cache}
+ \fl{ \.{\land}}\al{1020}{1}{ pc \.{'} \.{=} [ pc {\EXCEPT} {\bang} [ self ]
+ \.{=}\@w{Finish} ]}
+ \fl{ \.{\land}}\al{1021}{1}{ {\UNCHANGED} {\langle}}\al{1021}{3}{ hash\_ring
+ ,\, catalog\_snapshot ,\, task\_queue ,\,}
+\fl{ worker\_status ,\, lease\_expired ,\, crashes ,\,}
+\fl{ timeouts ,\, req\_version ,\, proxy ,\, curr\_req ,\,}
+\fl{ curr\_epoch ,\, curr\_blob ,\, curr\_proxy {\rangle}}
+\fl{}
+ \fl{ EnqueueREST ( self ) \.{\defeq}}\al{1026}{5}{ \.{\land}}\al{1026}{6}{ pc
+ [ self ] \.{=}\@w{EnqueueREST}}
+ \fl{ \.{\land}}\al{1027}{1}{ jobs \.{'} \.{=} [ jobs {\EXCEPT} {\bang} [ self
+ ] \.{=} Job\_Enqueue ( jobs [ self ] ) ]}
+ \fl{ \.{\land}}\al{1028}{1}{ task\_queue \.{'} \.{=} Append ( task\_queue ,\,
+ self )}
+ \fl{ \.{\land}}\al{1029}{1}{ pc \.{'} \.{=} [ pc {\EXCEPT} {\bang} [ self ]
+ \.{=}\@w{AwaitREST} ]}
+ \fl{ \.{\land}}\al{1030}{1}{ {\UNCHANGED} {\langle}}\al{1030}{3}{ hash\_ring
+ ,\, catalog\_snapshot ,\, cache ,\,}
+\fl{ blob\_storage ,\, available\_blobs ,\,}
+\fl{ worker\_status ,\, client\_received ,\,}
+\fl{ commit\_count ,\, lease\_expired ,\, crashes ,\,}
+\fl{ timeouts ,\, req\_version ,\, proxy ,\, curr\_req ,\,}
+\fl{ curr\_epoch ,\, curr\_blob ,\, curr\_proxy {\rangle}}
+\fl{}
+ \fl{ AwaitREST ( self ) \.{\defeq}}\al{1037}{5}{ \.{\land}}\al{1037}{6}{ pc [
+ self ] \.{=}\@w{AwaitREST}}
+\fl{ \.{\land}}\al{1038}{1}{ jobs [ self ] . state \.{\in} Terminal}
+ \fl{ \.{\land}}\al{1039}{1}{ {\IF}}\al{1039}{2}{ jobs [ self ] . state
+ \.{=}\@w{ACCEPTED}}
+ \fl{ \.{\THEN}}\al{1040}{1}{ \.{\land}}\al{1040}{2}{ client\_received \.{'}
+ \.{=} [ client\_received {\EXCEPT} {\bang} [ self ] \.{=} Client\_Deliver (
+ client\_received [ self ] ,\, jobs [ self ] . blob\_ptr ,\, jobs [ self ] .
+ tenant ,\, jobs [ self ] . query ,\, jobs [ self ] . version ,\, jobs [ self
+ ] . security\_context ) ]}
+\fl{ \.{\ELSE}}\al{1041}{1}{ \.{\land}}\al{1041}{2}{ {\TRUE}}
+\fl{ \.{\land}}\al{1042}{1}{ {\UNCHANGED} client\_received}
+ \fl{ \.{\land}}\al{1043}{1}{ pc \.{'} \.{=} [ pc {\EXCEPT} {\bang} [ self ]
+ \.{=}\@w{Finish} ]}
+ \fl{ \.{\land}}\al{1044}{1}{ {\UNCHANGED} {\langle}}\al{1044}{3}{ hash\_ring
+ ,\, catalog\_snapshot ,\, cache ,\,}
+\fl{ task\_queue ,\, jobs ,\, blob\_storage ,\,}
+\fl{ available\_blobs ,\, worker\_status ,\,}
+\fl{ commit\_count ,\, lease\_expired ,\, crashes ,\,}
+\fl{ timeouts ,\, req\_version ,\, proxy ,\, curr\_req ,\,}
+\fl{ curr\_epoch ,\, curr\_blob ,\, curr\_proxy {\rangle}}
+\fl{}
+ \fl{ Finish ( self ) \.{\defeq}}\al{1051}{5}{ \.{\land}}\al{1051}{6}{ pc [
+ self ] \.{=}\@w{Finish}}
+ \fl{ \.{\land}}\al{1052}{1}{ {\IF}}\al{1052}{2}{ client\_received [ self ] .
+ delivered}
+ \fl{ \.{\THEN}}\al{1053}{1}{ \.{\land}}\al{1053}{2}{ pc \.{'}}\al{1053}{4}{
+ \.{=}}\al{1053}{5}{ [ pc {\EXCEPT} {\bang} [ self ]}\al{1053}{12}{
+ \.{=}}\al{1053}{13}{\@w{ReleaseBlob} ]}
+ \fl{ \.{\ELSE}}\al{1054}{1}{ \.{\land}}\al{1054}{2}{ pc \.{'}}\al{1054}{4}{
+ \.{=}}\al{1054}{5}{ [ pc {\EXCEPT} {\bang} [ self ]}\al{1054}{12}{
+ \.{=}}\al{1054}{13}{\@w{Done} ]}
+ \fl{ \.{\land}}\al{1055}{1}{ {\UNCHANGED} {\langle}}\al{1055}{3}{ hash\_ring
+ ,\, catalog\_snapshot ,\, cache ,\, task\_queue ,\,}
+\fl{ jobs ,\, blob\_storage ,\, available\_blobs ,\,}
+\fl{ worker\_status ,\, client\_received ,\, commit\_count ,\,}
+\fl{ lease\_expired ,\, crashes ,\, timeouts ,\, req\_version ,\,}
+\fl{ proxy ,\, curr\_req ,\, curr\_epoch ,\, curr\_blob ,\,}
+\fl{ curr\_proxy {\rangle}}
+\fl{}
+ \fl{ ReleaseBlob ( self ) \.{\defeq}}\al{1062}{5}{ \.{\land}}\al{1062}{6}{ pc
+ [ self ] \.{=}\@w{ReleaseBlob}}
+ \fl{ \.{\land}}\al{1063}{1}{ client\_received \.{'} \.{=} [ client\_received
+ {\EXCEPT} {\bang} [ self ] \.{=} Client\_Release ( client\_received [ self ]
+ ) ]}
+ \fl{ \.{\land}}\al{1064}{1}{ pc \.{'} \.{=} [ pc {\EXCEPT} {\bang} [ self ]
+ \.{=}\@w{Done} ]}
+ \fl{ \.{\land}}\al{1065}{1}{ {\UNCHANGED} {\langle}}\al{1065}{3}{ hash\_ring
+ ,\, catalog\_snapshot ,\, cache ,\,}
+\fl{ task\_queue ,\, jobs ,\, blob\_storage ,\,}
+\fl{ available\_blobs ,\, worker\_status ,\,}
+\fl{ commit\_count ,\, lease\_expired ,\, crashes ,\,}
+\fl{ timeouts ,\, req\_version ,\, proxy ,\, curr\_req ,\,}
+\fl{ curr\_epoch ,\, curr\_blob ,\, curr\_proxy {\rangle}}
+\fl{}
+ \fl{ ClientProcess ( self ) \.{\defeq}}\al{1072}{5}{ Start ( self ) \.{\lor}
+ BindSnapshot ( self )}
+ \fl{ \.{\lor}}\al{1073}{1}{ CheckCache ( self ) \.{\lor} InitializeJob ( self
+ )}
+\fl{ \.{\lor}}\al{1074}{1}{ Route ( self ) \.{\lor} ExecuteFlight ( self )}
+\fl{ \.{\lor}}\al{1075}{1}{ EnqueueREST ( self ) \.{\lor} AwaitREST ( self )}
+\fl{ \.{\lor}}\al{1076}{1}{ Finish ( self ) \.{\lor} ReleaseBlob ( self )}
+\fl{}
+ \fl{ ClaimTask ( self ) \.{\defeq}}\al{1078}{5}{ \.{\land}}\al{1078}{6}{ pc [
+ self ] \.{=}\@w{ClaimTask}}
+ \fl{ \.{\land}}\al{1079}{1}{ Len ( task\_queue ) \.{>} 0 \.{\land}
+ worker\_status [ self ] \.{=}\@w{ACTIVE}}
+ \fl{ \.{\land}}\al{1080}{1}{ \.{\LET} r \.{\defeq} Head ( task\_queue )
+ \.{\IN}}
+\fl{ \.{\land}}\al{1081}{1}{ task\_queue \.{'} \.{=} Tail ( task\_queue )}
+ \fl{ \.{\land}}\al{1082}{1}{ curr\_req \.{'} \.{=} [ curr\_req {\EXCEPT}
+ {\bang} [ self ] \.{=} r ]}
+ \fl{ \.{\land}}\al{1083}{1}{ curr\_blob \.{'} \.{=} [ curr\_blob {\EXCEPT}
+ {\bang} [ self ] \.{=} NONE ]}
+ \fl{ \.{\land}}\al{1084}{1}{ {\IF}}\al{1084}{2}{ jobs [ r ] . state
+ \.{=}\@w{QUEUED}}
+ \fl{ \.{\THEN}}\al{1085}{1}{ \.{\land}}\al{1085}{2}{ curr\_epoch \.{'} \.{=}
+ [ curr\_epoch {\EXCEPT} {\bang} [ self ] \.{=} jobs [ r ] . lease\_epoch
+ \.{+} 1 ]}
+ \fl{ \.{\land}}\al{1086}{1}{ jobs \.{'} \.{=} [ jobs {\EXCEPT} {\bang} [ r ]
+ \.{=} Job\_Claim ( jobs [ r ] ,\, self ) ]}
+ \fl{ \.{\ELSE}}\al{1087}{1}{ \.{\land}}\al{1087}{2}{ curr\_epoch \.{'} \.{=}
+ [ curr\_epoch {\EXCEPT} {\bang} [ self ] \.{=} 0 ]}
+\fl{ \.{\land}}\al{1088}{1}{ jobs \.{'} \.{=} jobs}
+ \fl{ \.{\land}}\al{1089}{1}{ pc \.{'} \.{=} [ pc {\EXCEPT} {\bang} [ self ]
+ \.{=}\@w{StartExecution} ]}
+ \fl{ \.{\land}}\al{1090}{1}{ {\UNCHANGED} {\langle}}\al{1090}{3}{ hash\_ring
+ ,\, catalog\_snapshot ,\, cache ,\,}
+\fl{ blob\_storage ,\, available\_blobs ,\,}
+\fl{ worker\_status ,\, client\_received ,\,}
+\fl{ commit\_count ,\, lease\_expired ,\, crashes ,\,}
+\fl{ timeouts ,\, req\_version ,\, proxy ,\, curr\_proxy {\rangle}}
+\fl{}
+ \fl{ StartExecution ( self ) \.{\defeq}}\al{1096}{5}{ \.{\land}}\al{1096}{6}{
+ pc [ self ] \.{=}\@w{StartExecution}}
+ \fl{ \.{\land}}\al{1097}{1}{ {\IF}}\al{1097}{2}{ curr\_epoch [ self ] \.{>} 0
+ \.{\land} worker\_status [ self ] \.{=}\@w{ACTIVE} \.{\land} HoldsLease (
+ curr\_req [ self ] ,\, curr\_epoch [ self ] ,\, self ,\,\@w{CLAIMED} )}
+ \fl{ \.{\THEN}}\al{1098}{1}{ \.{\land}}\al{1098}{2}{ jobs \.{'} \.{=} [ jobs
+ {\EXCEPT} {\bang} [ curr\_req [ self ] ] \.{=} Job\_Run ( jobs [ curr\_req [
+ self ] ] ) ]}
+ \fl{ \.{\land}}\al{1099}{1}{ pc \.{'}}\al{1099}{3}{ \.{=}}\al{1099}{4}{ [ pc
+ {\EXCEPT} {\bang} [ self ]}\al{1099}{11}{
+ \.{=}}\al{1099}{12}{\@w{AllocateBlob} ]}
+ \fl{ \.{\ELSE}}\al{1100}{1}{ \.{\land}}\al{1100}{2}{ pc \.{'}}\al{1100}{4}{
+ \.{=}}\al{1100}{5}{ [ pc {\EXCEPT} {\bang} [ self ]}\al{1100}{12}{
+ \.{=}}\al{1100}{13}{\@w{ClaimTask} ]}
+\fl{ \.{\land}}\al{1101}{1}{ jobs \.{'} \.{=} jobs}
+ \fl{ \.{\land}}\al{1102}{1}{ {\UNCHANGED} {\langle}}\al{1102}{3}{ hash\_ring
+ ,\, catalog\_snapshot ,\, cache ,\,}
+\fl{ task\_queue ,\, blob\_storage ,\,}
+\fl{ available\_blobs ,\, worker\_status ,\,}
+\fl{ client\_received ,\, commit\_count ,\,}
+\fl{ lease\_expired ,\, crashes ,\, timeouts ,\,}
+\fl{ req\_version ,\, proxy ,\, curr\_req ,\,}
+\fl{ curr\_epoch ,\, curr\_blob ,\, curr\_proxy {\rangle}}
+\fl{}
+ \fl{ AllocateBlob ( self ) \.{\defeq}}\al{1110}{5}{ \.{\land}}\al{1110}{6}{
+ pc [ self ] \.{=}\@w{AllocateBlob}}
+ \fl{ \.{\land}}\al{1111}{1}{ worker\_status [ self ] \.{\neq}\@w{ACTIVE}
+ \.{\lor} {\lnot} HoldsLease ( curr\_req [ self ] ,\, curr\_epoch [ self ]
+ ,\, self ,\,\@w{RUNNING} ) \.{\lor} available\_blobs \.{\neq} \{ \}}
+ \fl{ \.{\land}}\al{1112}{1}{ {\IF}}\al{1112}{2}{ worker\_status [ self ]
+ \.{=}\@w{ACTIVE} \.{\land} HoldsLease ( curr\_req [ self ] ,\, curr\_epoch [
+ self ] ,\, self ,\,\@w{RUNNING} ) \.{\land} available\_blobs \.{\neq} \{ \}}
+ \fl{ \.{\THEN}}\al{1113}{1}{ \.{\land}}\al{1113}{2}{ \E\, b \.{\in}
+ available\_blobs \.{:}}
+ \fl{ \.{\land}}\al{1114}{1}{ available\_blobs \.{'} \.{=} available\_blobs
+ \.{\,\backslash\,} \{ b \}}
+ \fl{ \.{\land}}\al{1115}{1}{ curr\_blob \.{'} \.{=} [ curr\_blob {\EXCEPT}
+ {\bang} [ self ] \.{=} b ]}
+ \fl{ \.{\land}}\al{1116}{1}{ blob\_storage \.{'} \.{=} [ blob\_storage
+ {\EXCEPT} {\bang} [ b ] \.{=} Blob\_Stage ( curr\_req [ self ] ,\,
+ curr\_epoch [ self ] ,\, jobs [ curr\_req [ self ] ] . tenant ,\, jobs [
+ curr\_req [ self ] ] . query ,\, jobs [ curr\_req [ self ] ] . version ,\,
+ jobs [ curr\_req [ self ] ] . security\_context ) ]}
+ \fl{ \.{\land}}\al{1117}{1}{ pc \.{'}}\al{1117}{3}{ \.{=}}\al{1117}{4}{ [ pc
+ {\EXCEPT} {\bang} [ self ]}\al{1117}{11}{
+ \.{=}}\al{1117}{12}{\@w{PublishPointer} ]}
+ \fl{ \.{\ELSE}}\al{1118}{1}{ \.{\land}}\al{1118}{2}{ pc \.{'}}\al{1118}{4}{
+ \.{=}}\al{1118}{5}{ [ pc {\EXCEPT} {\bang} [ self ]}\al{1118}{12}{
+ \.{=}}\al{1118}{13}{\@w{ClaimTask} ]}
+ \fl{ \.{\land}}\al{1119}{1}{ {\UNCHANGED} {\langle}}\al{1119}{3}{
+ blob\_storage ,\, available\_blobs ,\,}
+\fl{ curr\_blob {\rangle}}
+ \fl{ \.{\land}}\al{1121}{1}{ {\UNCHANGED} {\langle}}\al{1121}{3}{ hash\_ring
+ ,\, catalog\_snapshot ,\, cache ,\,}
+\fl{ task\_queue ,\, jobs ,\, worker\_status ,\,}
+\fl{ client\_received ,\, commit\_count ,\,}
+\fl{ lease\_expired ,\, crashes ,\, timeouts ,\,}
+\fl{ req\_version ,\, proxy ,\, curr\_req ,\, curr\_epoch ,\,}
+\fl{ curr\_proxy {\rangle}}
+\fl{}
+ \fl{ PublishPointer ( self ) \.{\defeq}}\al{1128}{5}{ \.{\land}}\al{1128}{6}{
+ pc [ self ] \.{=}\@w{PublishPointer}}
+ \fl{ \.{\land}}\al{1129}{1}{ {\IF}}\al{1129}{2}{ worker\_status [ self ]
+ \.{=}\@w{ACTIVE} \.{\land} HoldsLease ( curr\_req [ self ] ,\, curr\_epoch [
+ self ] ,\, self ,\,\@w{RUNNING} )}
+ \fl{ \.{\THEN}}\al{1130}{1}{ \.{\land}}\al{1130}{2}{ jobs \.{'} \.{=} [ jobs
+ {\EXCEPT} {\bang} [ curr\_req [ self ] ] \.{=} Job\_Stage ( jobs [ curr\_req
+ [ self ] ] ,\, curr\_blob [ self ] ) ]}
+ \fl{ \.{\land}}\al{1131}{1}{ pc \.{'}}\al{1131}{3}{ \.{=}}\al{1131}{4}{ [ pc
+ {\EXCEPT} {\bang} [ self ]}\al{1131}{11}{ \.{=}}\al{1131}{12}{\@w{CommitJob}
+ ]}
+ \fl{ \.{\ELSE}}\al{1132}{1}{ \.{\land}}\al{1132}{2}{ pc \.{'}}\al{1132}{4}{
+ \.{=}}\al{1132}{5}{ [ pc {\EXCEPT} {\bang} [ self ]}\al{1132}{12}{
+ \.{=}}\al{1132}{13}{\@w{ClaimTask} ]}
+\fl{ \.{\land}}\al{1133}{1}{ jobs \.{'} \.{=} jobs}
+ \fl{ \.{\land}}\al{1134}{1}{ {\UNCHANGED} {\langle}}\al{1134}{3}{ hash\_ring
+ ,\, catalog\_snapshot ,\, cache ,\,}
+\fl{ task\_queue ,\, blob\_storage ,\,}
+\fl{ available\_blobs ,\, worker\_status ,\,}
+\fl{ client\_received ,\, commit\_count ,\,}
+\fl{ lease\_expired ,\, crashes ,\, timeouts ,\,}
+\fl{ req\_version ,\, proxy ,\, curr\_req ,\,}
+\fl{ curr\_epoch ,\, curr\_blob ,\, curr\_proxy {\rangle}}
+\fl{}
+ \fl{ CommitJob ( self ) \.{\defeq}}\al{1142}{5}{ \.{\land}}\al{1142}{6}{ pc [
+ self ] \.{=}\@w{CommitJob}}
+ \fl{ \.{\land}}\al{1143}{1}{ {\IF}}\al{1143}{2}{ worker\_status [ self ]
+ \.{=}\@w{ACTIVE} \.{\land} HoldsLease ( curr\_req [ self ] ,\, curr\_epoch [
+ self ] ,\, self ,\,\@w{STAGED} )}
+ \fl{ \.{\THEN}}\al{1144}{1}{ \.{\land}}\al{1144}{2}{ jobs \.{'} \.{=} [ jobs
+ {\EXCEPT} {\bang} [ curr\_req [ self ] ] \.{=} Job\_Accept ( jobs [
+ curr\_req [ self ] ] ) ]}
+ \fl{ \.{\land}}\al{1145}{1}{ blob\_storage \.{'}}\al{1145}{3}{
+ \.{=}}\al{1145}{4}{ [ blob\_storage {\EXCEPT} {\bang} [ curr\_blob [ self ]
+ ] \.{=} Blob\_Commit ( blob\_storage [ curr\_blob [ self ] ] ) ]}
+ \fl{ \.{\land}}\al{1146}{1}{ commit\_count \.{'}}\al{1146}{3}{
+ \.{=}}\al{1146}{4}{ [ commit\_count {\EXCEPT} {\bang} [ curr\_req [ self ] ]
+ \.{=} commit\_count [ curr\_req [ self ] ] \.{+} 1 ]}
+ \fl{ \.{\land}}\al{1147}{1}{ pc \.{'}}\al{1147}{3}{ \.{=}}\al{1147}{4}{ [ pc
+ {\EXCEPT} {\bang} [ self ]}\al{1147}{11}{
+ \.{=}}\al{1147}{12}{\@w{PopulateCache} ]}
+ \fl{ \.{\ELSE}}\al{1148}{1}{ \.{\land}}\al{1148}{2}{ pc \.{'}}\al{1148}{4}{
+ \.{=}}\al{1148}{5}{ [ pc {\EXCEPT} {\bang} [ self ]}\al{1148}{12}{
+ \.{=}}\al{1148}{13}{\@w{ClaimTask} ]}
+ \fl{ \.{\land}}\al{1149}{1}{ {\UNCHANGED} {\langle} jobs ,\, blob\_storage
+ ,\, commit\_count {\rangle}}
+ \fl{ \.{\land}}\al{1150}{1}{ {\UNCHANGED} {\langle}}\al{1150}{3}{ hash\_ring
+ ,\, catalog\_snapshot ,\, cache ,\,}
+\fl{ task\_queue ,\, available\_blobs ,\, worker\_status ,\,}
+\fl{ client\_received ,\, lease\_expired ,\, crashes ,\,}
+\fl{ timeouts ,\, req\_version ,\, proxy ,\, curr\_req ,\,}
+\fl{ curr\_epoch ,\, curr\_blob ,\, curr\_proxy {\rangle}}
+\fl{}
+ \fl{ PopulateCache ( self )}\al{1156}{4}{ \.{\defeq}}\al{1156}{5}{
+ \.{\land}}\al{1156}{6}{ pc [ self ] \.{=}\@w{PopulateCache}}
+ \fl{ \.{\land}}\al{1157}{1}{ {\IF}}\al{1157}{2}{ worker\_status [ self ]
+ \.{=}\@w{ACTIVE}}
+ \fl{ \.{\land}}\al{1158}{1}{ jobs [ curr\_req [ self ] ] . state
+ \.{=}\@w{ACCEPTED}}
+ \fl{ \.{\land}}\al{1159}{1}{ jobs [ curr\_req [ self ] ] . blob\_ptr \.{=}
+ curr\_blob [ self ]}
+ \fl{ \.{\land}}\al{1160}{1}{ blob\_storage [ curr\_blob [ self ] ] .
+ allocated}
+ \fl{ \.{\land}}\al{1161}{1}{ {\lnot} blob\_storage [ curr\_blob [ self ] ] .
+ staged}
+ \fl{ \.{\land}}\al{1162}{1}{ BlobMatches (}\al{1162}{3}{ curr\_blob [ self ]
+ ,\, jobs [ curr\_req [ self ] ] . tenant ,\, jobs [ curr\_req [ self ] ] .
+ query ,\,}
+ \fl{ jobs [ curr\_req [ self ] ] . version ,\, jobs [ curr\_req [ self ] ] .
+ security\_context )}
+ \fl{ \.{\land}}\al{1164}{1}{ jobs [ curr\_req [ self ] ] . version \.{=}
+ catalog\_snapshot [ jobs [ curr\_req [ self ] ] . tenant ]}
+ \fl{ \.{\THEN}}\al{1165}{1}{ \.{\land}}\al{1165}{2}{ curr\_proxy \.{'} \.{=}
+ [ curr\_proxy {\EXCEPT} {\bang} [ self ] \.{=} hash\_ring [ jobs [ curr\_req
+ [ self ] ] . tenant ,\, jobs [ curr\_req [ self ] ] . query ] ]}
+ \fl{ \.{\land}}\al{1166}{1}{ cache \.{'} \.{=} [ cache {\EXCEPT}
+ {\bang}}\al{1166}{8}{ [ curr\_proxy \.{'} [ self ] ] [ jobs [ curr\_req [
+ self ] ] . tenant ] [ jobs [ curr\_req [ self ] ] . query ]}
+ \fl{ [ jobs [ curr\_req [ self ] ] . version ] [ jobs [ curr\_req [ self ] ]
+ . security\_context ] \.{=} ValidCache ( curr\_blob [ self ] ) ]}
+\fl{ \.{\ELSE}}\al{1168}{1}{ \.{\land}}\al{1168}{2}{ {\TRUE}}
+ \fl{ \.{\land}}\al{1169}{1}{ {\UNCHANGED} {\langle} cache ,\, curr\_proxy
+ {\rangle}}
+ \fl{ \.{\land}}\al{1170}{1}{ pc \.{'} \.{=} [ pc {\EXCEPT} {\bang} [ self ]
+ \.{=}\@w{ClaimTask} ]}
+ \fl{ \.{\land}}\al{1171}{1}{ {\UNCHANGED} {\langle}}\al{1171}{3}{ hash\_ring
+ ,\, catalog\_snapshot ,\, task\_queue ,\,}
+\fl{ jobs ,\, blob\_storage ,\, available\_blobs ,\,}
+\fl{ worker\_status ,\, client\_received ,\,}
+\fl{ commit\_count ,\, lease\_expired ,\, crashes ,\,}
+\fl{ timeouts ,\, req\_version ,\, proxy ,\, curr\_req ,\,}
+\fl{ curr\_epoch ,\, curr\_blob {\rangle}}
+\fl{}
+ \fl{ ComputeWorker ( self )}\al{1178}{4}{ \.{\defeq}}\al{1178}{5}{ ClaimTask
+ ( self ) \.{\lor} StartExecution ( self )}
+ \fl{ \.{\lor}}\al{1179}{1}{ AllocateBlob ( self ) \.{\lor} PublishPointer (
+ self )}
+ \fl{ \.{\lor}}\al{1180}{1}{ CommitJob ( self ) \.{\lor} PopulateCache ( self
+ )}
+\fl{}
+ \fl{ ScaleLoop \.{\defeq}}\al{1182}{2}{ \.{\land}}\al{1182}{3}{ pc
+ [\@w{KedaAutoscaler} ] \.{=}\@w{ScaleLoop}}
+ \fl{ \.{\land}}\al{1183}{1}{ \.{\lor}}\al{1183}{2}{ \.{\land}}\al{1183}{3}{
+ Len}\al{1183}{4}{ ( task\_queue ) \.{\geq} ScaleOutThreshold}
+ \fl{ \.{\land}}\al{1184}{1}{ \E\, w \.{\in} Workers \.{:} worker\_status [ w
+ ] \.{=}\@w{OFFLINE}}
+ \fl{ \.{\land}}\al{1185}{1}{ \E\, w \.{\in} \{ x \.{\in} Workers \.{:}
+ worker\_status [ x ] \.{=}\@w{OFFLINE} \} \.{:}}
+ \fl{ worker\_status \.{'} \.{=} [ worker\_status {\EXCEPT} {\bang} [ w ]
+ \.{=}\@w{ACTIVE} ]}
+ \fl{ \.{\lor}}\al{1187}{1}{ \.{\land}}\al{1187}{2}{ Len}\al{1187}{3}{ (
+ task\_queue ) \.{=} 0}
+ \fl{ \.{\land}}\al{1188}{1}{ \E\,}\al{1188}{2}{ w \.{\in} Workers \.{:}
+ worker\_status [ w ] \.{=}\@w{ACTIVE}}
+ \fl{ \.{\land} \A\, r \.{\in} Requests \.{:} {\lnot} ( jobs [ r ] . owner
+ \.{=} w \.{\land} jobs [ r ] . state \.{\in} Active )}
+ \fl{ \.{\land}}\al{1190}{1}{ \E\, w \.{\in} \{ x}\al{1190}{6}{ \.{\in}
+ Workers \.{:} worker\_status [ x ] \.{=}\@w{ACTIVE}}
+ \fl{ \.{\land} \A\, r \.{\in} Requests \.{:} {\lnot} ( jobs [ r ] . owner
+ \.{=} x \.{\land} jobs [ r ] . state \.{\in} Active ) \} \.{:}}
+ \fl{ worker\_status \.{'} \.{=} [ worker\_status {\EXCEPT} {\bang} [ w ]
+ \.{=}\@w{OFFLINE} ]}
+ \fl{ \.{\land}}\al{1193}{1}{ pc \.{'} \.{=} [ pc {\EXCEPT} {\bang}
+ [\@w{KedaAutoscaler} ] \.{=}\@w{ScaleLoop} ]}
+ \fl{ \.{\land}}\al{1194}{1}{ {\UNCHANGED} {\langle}}\al{1194}{3}{ hash\_ring
+ ,\, catalog\_snapshot ,\, cache ,\, task\_queue ,\,}
+\fl{ jobs ,\, blob\_storage ,\, available\_blobs ,\,}
+\fl{ client\_received ,\, commit\_count ,\, lease\_expired ,\,}
+\fl{ crashes ,\, timeouts ,\, req\_version ,\, proxy ,\, curr\_req ,\,}
+\fl{ curr\_epoch ,\, curr\_blob ,\, curr\_proxy {\rangle}}
+\fl{}
+\fl{ KedaAutoscaler \.{\defeq} ScaleLoop}
+\fl{}
+ \fl{ InjectLoop \.{\defeq}}\al{1202}{2}{ \.{\land}}\al{1202}{3}{ pc
+ [\@w{TimeoutInjector} ] \.{=}\@w{InjectLoop}}
+\fl{ \.{\land}}\al{1203}{1}{ {\IF}}\al{1203}{2}{ timeouts \.{<} MaxTimeouts}
+ \fl{ \.{\THEN}}\al{1204}{1}{ \.{\land}}\al{1204}{2}{ \E\, r \.{\in} \{ x
+ \.{\in} Requests \.{:} jobs [ x ] . state \.{\in} Active \.{\land}
+ worker\_status [ jobs [ x ] . owner ] \.{=}\@w{ACTIVE} \.{\land} {\lnot}
+ lease\_expired [ x ] \} \.{:}}
+ \fl{ \.{\land}}\al{1205}{1}{ lease\_expired \.{'} \.{=} [ lease\_expired
+ {\EXCEPT} {\bang} [ r ] \.{=} {\TRUE} ]}
+\fl{ \.{\land}}\al{1206}{1}{ timeouts \.{'} \.{=} timeouts \.{+} 1}
+ \fl{ \.{\land}}\al{1207}{1}{ pc \.{'}}\al{1207}{3}{ \.{=}}\al{1207}{4}{ [ pc
+ {\EXCEPT} {\bang} [\@w{TimeoutInjector} ]}\al{1207}{11}{
+ \.{=}}\al{1207}{12}{\@w{InjectLoop} ]}
+ \fl{ \.{\ELSE}}\al{1208}{1}{ \.{\land}}\al{1208}{2}{ pc \.{'}}\al{1208}{4}{
+ \.{=}}\al{1208}{5}{ [ pc {\EXCEPT} {\bang} [\@w{TimeoutInjector}
+ ]}\al{1208}{12}{ \.{=}}\al{1208}{13}{\@w{Done} ]}
+ \fl{ \.{\land}}\al{1209}{1}{ {\UNCHANGED} {\langle} lease\_expired ,\,
+ timeouts {\rangle}}
+ \fl{ \.{\land}}\al{1210}{1}{ {\UNCHANGED} {\langle}}\al{1210}{3}{ hash\_ring
+ ,\, catalog\_snapshot ,\, cache ,\, task\_queue ,\,}
+\fl{ jobs ,\, blob\_storage ,\, available\_blobs ,\,}
+\fl{ worker\_status ,\, client\_received ,\, commit\_count ,\,}
+\fl{ crashes ,\, req\_version ,\, proxy ,\, curr\_req ,\,}
+\fl{ curr\_epoch ,\, curr\_blob ,\, curr\_proxy {\rangle}}
+\fl{}
+\fl{ TimeoutInjector \.{\defeq} InjectLoop}
+\fl{}
+ \fl{ LeaseLoop \.{\defeq}}\al{1218}{2}{ \.{\land}}\al{1218}{3}{ pc
+ [\@w{LeaseManager} ] \.{=}\@w{LeaseLoop}}
+ \fl{ \.{\land}}\al{1219}{1}{ \.{\lor}}\al{1219}{2}{ \.{\land}}\al{1219}{3}{
+ \E\, r \.{\in} ExpirableJobs \.{:}}
+ \fl{ \.{\land}}\al{1220}{1}{ {\IF}}\al{1220}{2}{ jobs [ r ] . attempts \.{<}
+ MaxAttempts}
+ \fl{ \.{\THEN}}\al{1221}{1}{ \.{\land}}\al{1221}{2}{ jobs \.{'} \.{=} [ jobs
+ {\EXCEPT} {\bang} [ r ] \.{=} Job\_Retry ( jobs [ r ] ) ]}
+ \fl{ \.{\land}}\al{1222}{1}{ task\_queue \.{'} \.{=} Append ( task\_queue ,\,
+ r )}
+ \fl{ \.{\ELSE}}\al{1223}{1}{ \.{\land}}\al{1223}{2}{ jobs \.{'} \.{=} [ jobs
+ {\EXCEPT} {\bang} [ r ] \.{=} Job\_Fail ( jobs [ r ] ) ]}
+\fl{ \.{\land}}\al{1224}{1}{ {\UNCHANGED} task\_queue}
+ \fl{ \.{\land}}\al{1225}{1}{ lease\_expired \.{'} \.{=} [ lease\_expired
+ {\EXCEPT} {\bang} [ r ] \.{=} {\FALSE} ]}
+ \fl{ \.{\lor}}\al{1226}{1}{ \.{\land}}\al{1226}{2}{ \E\, r \.{\in} \{ x
+ \.{\in} Requests \.{:} jobs [ x ] . state \.{\notin} Active \.{\land}
+ lease\_expired [ x ] \} \.{:}}
+ \fl{ lease\_expired \.{'} \.{=} [ lease\_expired {\EXCEPT} {\bang} [ r ]
+ \.{=} {\FALSE} ]}
+ \fl{ \.{\land}}\al{1228}{1}{ {\UNCHANGED} {\langle} task\_queue ,\, jobs
+ {\rangle}}
+ \fl{ \.{\land}}\al{1229}{1}{ pc \.{'} \.{=} [ pc {\EXCEPT} {\bang}
+ [\@w{LeaseManager} ] \.{=}\@w{LeaseLoop} ]}
+ \fl{ \.{\land}}\al{1230}{1}{ {\UNCHANGED} {\langle}}\al{1230}{3}{ hash\_ring
+ ,\, catalog\_snapshot ,\, cache ,\, blob\_storage ,\,}
+\fl{ available\_blobs ,\, worker\_status ,\, client\_received ,\,}
+\fl{ commit\_count ,\, crashes ,\, timeouts ,\, req\_version ,\,}
+\fl{ proxy ,\, curr\_req ,\, curr\_epoch ,\, curr\_blob ,\,}
+\fl{ curr\_proxy {\rangle}}
+\fl{}
+\fl{ LeaseManager \.{\defeq} LeaseLoop}
+\fl{}
+ \fl{ CrashLoop \.{\defeq}}\al{1238}{2}{ \.{\land}}\al{1238}{3}{ pc
+ [\@w{Crasher} ] \.{=}\@w{CrashLoop}}
+\fl{ \.{\land}}\al{1239}{1}{ {\IF}}\al{1239}{2}{ crashes \.{<} MaxCrashes}
+ \fl{ \.{\THEN}}\al{1240}{1}{ \.{\land}}\al{1240}{2}{ \E\, w}\al{1240}{4}{
+ \.{\in}}\al{1240}{5}{ Workers \.{:} worker\_status [ w ] \.{=}\@w{ACTIVE}}
+ \fl{ \.{\land}}\al{1241}{1}{ \E\, w}\al{1241}{3}{ \.{\in}}\al{1241}{4}{ \{ x
+ \.{\in} Workers \.{:} worker\_status [ x ] \.{=}\@w{ACTIVE} \} \.{:}}
+ \fl{ \.{\land}}\al{1242}{1}{ worker\_status \.{'} \.{=} [ worker\_status
+ {\EXCEPT} {\bang} [ w ] \.{=}\@w{CRASHED} ]}
+\fl{ \.{\land}}\al{1243}{1}{ crashes \.{'} \.{=} crashes \.{+} 1}
+ \fl{ \.{\land}}\al{1244}{1}{ pc \.{'}}\al{1244}{3}{ \.{=}}\al{1244}{4}{ [ pc
+ {\EXCEPT} {\bang} [\@w{Crasher} ]}\al{1244}{11}{
+ \.{=}}\al{1244}{12}{\@w{CrashLoop} ]}
+ \fl{ \.{\ELSE}}\al{1245}{1}{ \.{\land}}\al{1245}{2}{ pc \.{'}}\al{1245}{4}{
+ \.{=}}\al{1245}{5}{ [ pc {\EXCEPT} {\bang} [\@w{Crasher} ]}\al{1245}{12}{
+ \.{=}}\al{1245}{13}{\@w{Done} ]}
+ \fl{ \.{\land}}\al{1246}{1}{ {\UNCHANGED} {\langle} worker\_status ,\,
+ crashes {\rangle}}
+ \fl{ \.{\land}}\al{1247}{1}{ {\UNCHANGED} {\langle}}\al{1247}{3}{ hash\_ring
+ ,\, catalog\_snapshot ,\, cache ,\, task\_queue ,\,}
+\fl{ jobs ,\, blob\_storage ,\, available\_blobs ,\,}
+\fl{ client\_received ,\, commit\_count ,\, lease\_expired ,\,}
+\fl{ timeouts ,\, req\_version ,\, proxy ,\, curr\_req ,\,}
+\fl{ curr\_epoch ,\, curr\_blob ,\, curr\_proxy {\rangle}}
+\fl{}
+\fl{ Crasher \.{\defeq} CrashLoop}
+\fl{}
+ \fl{ RecoverLoop \.{\defeq}}\al{1255}{2}{ \.{\land}}\al{1255}{3}{ pc
+ [\@w{Recoverer} ] \.{=}\@w{RecoverLoop}}
+ \fl{ \.{\land}}\al{1256}{1}{ \E\, w}\al{1256}{3}{ \.{\in}}\al{1256}{4}{
+ Workers \.{:} worker\_status [ w ] \.{=}\@w{CRASHED}}
+ \fl{ \.{\land}}\al{1257}{1}{ \E\, w}\al{1257}{3}{ \.{\in}}\al{1257}{4}{ \{ x
+ \.{\in} Workers \.{:} worker\_status [ x ] \.{=}\@w{CRASHED} \} \.{:}}
+ \fl{ worker\_status \.{'} \.{=} [ worker\_status {\EXCEPT} {\bang} [ w ]
+ \.{=}\@w{OFFLINE} ]}
+ \fl{ \.{\land}}\al{1259}{1}{ pc \.{'} \.{=} [ pc {\EXCEPT} {\bang}
+ [\@w{Recoverer} ] \.{=}\@w{RecoverLoop} ]}
+ \fl{ \.{\land}}\al{1260}{1}{ {\UNCHANGED} {\langle}}\al{1260}{3}{ hash\_ring
+ ,\, catalog\_snapshot ,\, cache ,\, task\_queue ,\,}
+\fl{ jobs ,\, blob\_storage ,\, available\_blobs ,\,}
+\fl{ client\_received ,\, commit\_count ,\, lease\_expired ,\,}
+\fl{ crashes ,\, timeouts ,\, req\_version ,\, proxy ,\, curr\_req ,\,}
+\fl{ curr\_epoch ,\, curr\_blob ,\, curr\_proxy {\rangle}}
+\fl{}
+\fl{ Recoverer \.{\defeq} RecoverLoop}
+\fl{}
+ \fl{ GCLoop \.{\defeq}}\al{1268}{2}{ \.{\land}}\al{1268}{3}{ pc
+ [\@w{GarbageCollector} ] \.{=}\@w{GCLoop}}
+\fl{ \.{\land}}\al{1269}{1}{ \E\, b \.{\in} GCable \.{:}}
+ \fl{ \.{\land}}\al{1270}{1}{ blob\_storage \.{'} \.{=} [ blob\_storage
+ {\EXCEPT} {\bang} [ b ] \.{=} FreeBlob ]}
+ \fl{ \.{\land}}\al{1271}{1}{ available\_blobs \.{'} \.{=} ( available\_blobs
+ \.{\cup} \{ b \} )}
+ \fl{ \.{\land}}\al{1272}{1}{ pc \.{'} \.{=} [ pc {\EXCEPT} {\bang}
+ [\@w{GarbageCollector} ] \.{=}\@w{GCLoop} ]}
+ \fl{ \.{\land}}\al{1273}{1}{ {\UNCHANGED} {\langle}}\al{1273}{3}{ hash\_ring
+ ,\, catalog\_snapshot ,\, cache ,\, task\_queue ,\, jobs ,\,}
+\fl{ worker\_status ,\, client\_received ,\, commit\_count ,\,}
+\fl{ lease\_expired ,\, crashes ,\, timeouts ,\, req\_version ,\, proxy ,\,}
+\fl{ curr\_req ,\, curr\_epoch ,\, curr\_blob ,\, curr\_proxy {\rangle}}
+\fl{}
+\fl{ GarbageCollector \.{\defeq} GCLoop}
+\fl{}
+ \fl{ EvictLoop \.{\defeq}}\al{1280}{2}{ \.{\land}}\al{1280}{3}{ pc
+ [\@w{CacheEvictor} ] \.{=}\@w{EvictLoop}}
+\fl{ \.{\land}}\al{1281}{1}{ \E\, e \.{\in} CachedKeys \.{:}}
+ \fl{ cache \.{'} \.{=} [ cache {\EXCEPT} {\bang} [ e [ 1 ] ] [ e [ 2 ] ] [ e
+ [ 3 ] ] [ e [ 4 ] ] [ e [ 5 ] ] \.{=} NoEntry ]}
+ \fl{ \.{\land}}\al{1283}{1}{ pc \.{'} \.{=} [ pc {\EXCEPT} {\bang}
+ [\@w{CacheEvictor} ] \.{=}\@w{EvictLoop} ]}
+ \fl{ \.{\land}}\al{1284}{1}{ {\UNCHANGED} {\langle}}\al{1284}{3}{ hash\_ring
+ ,\, catalog\_snapshot ,\, task\_queue ,\, jobs ,\,}
+\fl{ blob\_storage ,\, available\_blobs ,\, worker\_status ,\,}
+\fl{ client\_received ,\, commit\_count ,\, lease\_expired ,\,}
+\fl{ crashes ,\, timeouts ,\, req\_version ,\, proxy ,\, curr\_req ,\,}
+\fl{ curr\_epoch ,\, curr\_blob ,\, curr\_proxy {\rangle}}
+\fl{}
+\fl{ CacheEvictor \.{\defeq} EvictLoop}
+\fl{}
+ \fl{ ETLCommit \.{\defeq}}\al{1292}{2}{ \.{\land}}\al{1292}{3}{ pc
+ [\@w{LakehouseETL} ] \.{=}\@w{ETLCommit}}
+ \fl{ \.{\land}}\al{1293}{1}{ \E\, t \.{\in} \{ x}\al{1293}{6}{ \.{\in}
+ Tenants \.{:} catalog\_snapshot [ x ] \.{<} MaxSnapshot \} \.{:}}
+ \fl{ \.{\land}}\al{1294}{1}{ cache \.{'}}\al{1294}{3}{ \.{=} InvalidateCache
+ ( cache ,\, t ,\, catalog\_snapshot [ t ] \.{+} 1 )}
+ \fl{ \.{\land}}\al{1295}{1}{ catalog\_snapshot \.{'} \.{=} [
+ catalog\_snapshot {\EXCEPT} {\bang} [ t ] \.{=} catalog\_snapshot [ t ]
+ \.{+} 1 ]}
+ \fl{ \.{\land}}\al{1296}{1}{ pc \.{'} \.{=} [ pc {\EXCEPT} {\bang}
+ [\@w{LakehouseETL} ] \.{=}\@w{ETLCommit} ]}
+ \fl{ \.{\land}}\al{1297}{1}{ {\UNCHANGED} {\langle}}\al{1297}{3}{ hash\_ring
+ ,\, task\_queue ,\, jobs ,\, blob\_storage ,\,}
+\fl{ available\_blobs ,\, worker\_status ,\, client\_received ,\,}
+\fl{ commit\_count ,\, lease\_expired ,\, crashes ,\, timeouts ,\,}
+\fl{ req\_version ,\, proxy ,\, curr\_req ,\, curr\_epoch ,\,}
+\fl{ curr\_blob ,\, curr\_proxy {\rangle}}
+\fl{}
+\fl{ LakehouseETL \.{\defeq} ETLCommit}
+\fl{}
+ \fl{ Next}\al{1305}{1}{ \.{\defeq}}\al{1305}{2}{ KedaAutoscaler \.{\lor}
+ TimeoutInjector \.{\lor} LeaseManager \.{\lor} Crasher}
+ \fl{ \.{\lor}}\al{1306}{1}{ Recoverer \.{\lor} GarbageCollector \.{\lor}
+ CacheEvictor \.{\lor} LakehouseETL}
+ \fl{ \.{\lor}}\al{1307}{1}{ ( \E\, self}\al{1307}{4}{ \.{\in}}\al{1307}{5}{
+ Requests \.{:} ClientProcess ( self ) )}
+ \fl{ \.{\lor}}\al{1308}{1}{ ( \E\, self}\al{1308}{4}{ \.{\in}}\al{1308}{5}{
+ Workers \.{:} ComputeWorker ( self ) )}
+\fl{}
+ \fl{ Spec}\al{1310}{1}{ \.{\defeq}}\al{1310}{2}{ \.{\land}}\al{1310}{3}{ Init
+ \.{\land} {\Box} [ Next ]_{ vars}}
+ \fl{ \.{\land}}\al{1311}{1}{ \A\, self}\al{1311}{3}{ \.{\in}}\al{1311}{4}{
+ Requests \.{:} {\WF}_{ vars} ( ClientProcess ( self ) )}
+ \fl{ \.{\land}}\al{1312}{1}{ \A\, self}\al{1312}{3}{ \.{\in}}\al{1312}{4}{
+ Workers \.{:} {\WF}_{ vars} ( ComputeWorker ( self ) )}
+\fl{ \.{\land}}\al{1313}{1}{ {\WF}_{ vars} ( KedaAutoscaler )}
+\fl{ \.{\land}}\al{1314}{1}{ {\WF}_{ vars} ( LeaseManager )}
+\fl{ \.{\land}}\al{1315}{1}{ {\WF}_{ vars} ( Recoverer )}
+\fl{ \.{\land}}\al{1316}{1}{ {\WF}_{ vars} ( GarbageCollector )}
+\fl{ \.{\land}}\al{1317}{1}{ {\WF}_{ vars} ( CacheEvictor )}
+\fl{ \.{\land}}\al{1318}{1}{ {\WF}_{ vars} ( LakehouseETL )}
+\fl{}
+\fl{}
+\fl{}\bottombar\cl{}
+\end{document}
